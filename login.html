@@ -1,0 +1,63 @@
+<<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>LootRush - Login</title>
+
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+
+  <body>
+    <div class="auth-container">
+      <div class="auth-card" id="authCard">
+        <!-- LOGIN -->
+        <div class="form-box login-box">
+          <h1>Welcome Back</h1>
+          <p>Login to your LootRush account</p>
+
+          <input type="text" id="loginUsername" placeholder="Username" />
+
+          <input type="password" id="loginPassword" placeholder="Password" />
+
+          <button onclick="login()">LOGIN</button>
+
+          <span>
+            Don't have an account?
+            <b onclick="showRegister()">Register</b>
+          </span>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="form-box register-box">
+          <h1>Create Account</h1>
+          <p>Join LootRush</p>
+
+          <input type="text" id="registerUsername" placeholder="Username" />
+
+          <input type="email" id="registerEmail" placeholder="Email" />
+
+          <input type="password" id="registerPassword" placeholder="Password" />
+
+          <input
+            type="password"
+            id="registerPassword2"
+            placeholder="Confirm Password"
+          />
+
+          <button onclick="register()">REGISTER</button>
+
+          <span>
+            Already have an account?
+            <b onclick="showLogin()">Login</b>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>
