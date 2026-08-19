@@ -5,8 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LootRush</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Սա ավտոմատ թաքցնում է գրանցման և խաղի էջերը, մինչև օգտատերը մուտք չգործի */
+        #register-container, 
+        #app-dashboard, 
+        #game-tab, 
+        #shop-tab, 
+        #inventory-tab, 
+        #rewards-tab, 
+        #bomber-tab, 
+        #multiplier-tab, 
+        #wallet-tab {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -22,7 +34,7 @@
         <input type="password" placeholder="Enter your password">
         
         <button id="login-btn">🚪 Sign In</button>
-        <p>Don't have an account? <a href="#">Register here</a></p>
+        <p>Don't have an account? <a href="#" onclick="document.getElementById('auth-container').style.display='none'; document.getElementById('register-container').style.setProperty('display', 'block', 'important');">Register here</a></p>
     </div>
 
     <!-- Create Account Section -->
@@ -40,7 +52,7 @@
         <input type="password" placeholder="Create a password">
         
         <button id="register-btn">📝 Register</button>
-        <p>Already have an account? <a href="#">Sign in here</a></p>
+        <p>Already have an account? <a href="#" onclick="document.getElementById('register-container').style.setProperty('display', 'none', 'important'); document.getElementById('auth-container').style.display='block';">Sign in here</a></p>
     </div>
 
     <!-- Main Application Dashboard -->
@@ -222,8 +234,9 @@
         </div>
     </div>
 
-    <!-- Ճիշտ հղումներ ձեր աշխատող JS ֆայլերի համար -->
+    <!-- Scripts -->
     <script src="auth.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
+
