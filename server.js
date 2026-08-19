@@ -8,11 +8,8 @@ const app = express();
 // Թույլատրում ենք կապը ֆրոնտենդի (խաղի) հետ
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
-
-// Թեստային էջ ստուգման համար
-app.get("/", (req, res) => {
-  res.send("LootRush Stripe Server is running smoothly!");
-});
+const path = require("path");
+app.use(express.static(path.join(__dirname, "../")));
 
 // Վճարման սեսիայի ստեղծում (Checkout Session)
 app.post("/create-checkout-session", async (req, res) => {
