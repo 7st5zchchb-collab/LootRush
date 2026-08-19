@@ -439,7 +439,7 @@ async function buyWithStripe(item) {
   try {
     showMessage("⏳ Opening Stripe Checkout...");
 
-    const response = await fetch("https://onrender.com", {
+    const response = await fetch("https://lootrush-1.onrender.com", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
