@@ -6,240 +6,168 @@
     <title>LootRush</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Ավտոմատ թաքցնում ենք խաղի հիմնական էջերը, մինչև մուտք գործելը */
-        #register-container, 
-        #app-dashboard, 
-        #game-tab, 
-        #shop-tab, 
-        #inventory-tab, 
-        #rewards-tab, 
-        #bomber-tab, 
-        #multiplier-tab, 
-        #wallet-tab {
+        /* Ավտոմատ թաքցնում ենք էջերը, որպեսզի խառը չերևան */
+        .hidden {
             display: none !important;
         }
     </style>
 </head>
 <body>
 
-    <!-- Welcome / Login Section -->
-    <div id="auth-container">
-        <h2>Welcome to LootRush</h2>
-        <p>Sign in to your account to continue</p>
+    <!-- Ամբողջական Auth պատուհան, որը կառավարում է game.js-ը -->
+    <div id="authOverlay">
         
-        <label>Email Address</label>
-        <input type="email" id="login-email" placeholder="Enter your email">
-        
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="Enter your password">
-        
-        <button id="login-btn">🚪 Sign In</button>
-        <p>Don't have an account? <a href="#" onclick="document.getElementById('auth-container').style.display='none'; document.getElementById('register-container').style.setProperty('display', 'block', 'important');">Register here</a></p>
-    </div>
+        <!-- Welcome / Login Section -->
+        <div id="loginForm">
+            <h2>Welcome to LootRush</h2>
+            <p>Sign in to your account to continue</p>
+            
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="Enter your email">
+            
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password">
+            
+            <button id="login-btn" onclick="handleLogin()">🚪 Sign In</button>
+            <p>Don't have an account? <a href="#" onclick="switchAuthForm('register')">Register here</a></p>
+        </div>
 
-    <!-- Create Account Section -->
-    <div id="register-container">
-        <h2>Create Account</h2>
-        <p>Join LootRush and start winning rewards</p>
+        <!-- Create Account Section -->
+        <div id="registerForm" class="hidden">
+            <h2>Create Account</h2>
+            <p>Join LootRush and start winning rewards</p>
+            
+            <label>Username</label>
+            <input type="text" id="regUsername" placeholder="Choose a username">
+            
+            <label>Email Address</label>
+            <input type="email" id="regEmail" placeholder="Enter your email">
+            
+            <label>Password</label>
+            <input type="password" id="regPassword" placeholder="Create a password">
+            
+            <button id="register-btn" onclick="handleRegister()">📝 Register</button>
+            <p>Already have an account? <a href="#" onclick="switchAuthForm('login')">Sign in here</a></p>
+        </div>
         
-        <label>Username</label>
-        <input type="text" id="register-username" placeholder="Choose a username">
-        
-        <label>Email Address</label>
-        <input type="email" id="register-email" placeholder="Enter your email">
-        
-        <label>Password</label>
-        <input type="password" id="register-password" placeholder="Create a password">
-        
-        <button id="register-btn">📝 Register</button>
-        <p>Already have an account? <a href="#" onclick="document.getElementById('register-container').style.setProperty('display', 'none', 'important'); document.getElementById('auth-container').style.display='block';">Sign in here</a></p>
     </div>
 
     <!-- Main Application Dashboard -->
     <div id="app-dashboard">
         <h2>LootRush</h2>
+        <div id="message" class="message-box"></div>
         
-        <!-- Կոճակների ID-ները համապատասխանում են navigation-tabs-ի տաբերին -->
         <div class="navigation-tabs">
-            <button>🎲 Game</button>
-            <button>🛒 Shop</button>
-            <button>🎒 Inventory</button>
-            <button>🎁 Rewards</button>
-            <button>💣 Bomber</button>
-            <button>📈 Multiplier</button>
-            <button>💳 Wallet</button>
+            <button onclick="showPage('game-tab')">🎲 Game</button>
+            <button onclick="showPage('shop-tab')">🛒 Shop</button>
+            <button onclick="showPage('inventory-tab')">🎒 Inventory</button>
+            <button onclick="showPage('rewards-tab')">🎁 Rewards</button>
+            <button onclick="showPage('bomber-tab')">💣 Bomber</button>
+            <button onclick="showPage('multiplier-tab')">📈 Multiplier</button>
+            <button onclick="showPage('wallet-tab')">💳 Wallet</button>
         </div>
 
         <div class="user-info">
-            <p>Player: <span id="username-display">Guest</span></p>
-            <p>👤 Guest</p>
-            <button id="change-photo-btn">🖼 Change Photo</button>
-            <input type="file" id="avatar-input" style="display:none;">
-            <button id="logout-btn">🚪 Log Out</button>
-            <p>Skin: Default</p>
-            <p>💵 150</p>
-            <p>💎 0</p>
-            <p>⭐ 0</p>
+            <p>Player: <span id="playerName">Guest</span></p>
+            <p id="playerNameTop">👤 Guest</p>
+            <button onclick="document.getElementById('avatar-input').click()">🖼 Change Photo</button>
+            <input type="file" id="avatar-input" style="display:none;" onchange="changeAvatar(event)">
+            <button onclick="logout()">🚪 Log Out</button>
+            <p>Skin: <span id="currentSkin">Default</span></p>
+            <p>💵 <span id="coins">150</span></p>
+            <p>💎 <span id="diamonds">0</span></p>
+            <p>⭐ <span id="points">0</span></p>
         </div>
 
         <!-- 🎲 Game Tab -->
-        <div id="game-tab">
+        <div id="game-tab" class="page">
             <h1>Random Loot</h1>
             <p>Test your luck and win random rewards!</p>
-            <button>READY</button>
-            <p>🎁</p>
-            <h2>Mystery Box</h2>
-            <p>Press the button to roll.</p>
-            <h3>?</h3>
-            <button id="roll-btn">🎲 ROLL - 150 💵</button>
-            <p><strong>Total Rolls</strong> 0</p>
-            <p><strong>Best Streak</strong> 0</p>
-            <p><strong>Rare Items</strong> 0</p>
+            <button onclick="rollLoot()">🎲 ROLL - 150 💵</button>
+            <div class="loot-result">
+                <h3 id="rarity"></h3>
+                <h1 id="lootIcon">🎁</h1>
+                <h2 id="lootName">Mystery Box</h2>
+                <p id="lootDescription">Press the button to roll.</p>
+                <h4 id="reward">?</h4>
+            </div>
+            <p>Total Rolls: <span id="rolls">0</span></p>
+            <p>Best Streak: <span id="streak">0</span></p>
+            <p>Rare Items: <span id="rareItems">0</span></p>
         </div>
 
         <!-- 🛒 Shop Tab -->
-        <div id="shop-tab">
+        <div id="shop-tab" class="page hidden">
             <h1>🛒 Shop</h1>
             <p>Buy exclusive skins and premium items.</p>
             <h2>💵 Coin Skins</h2>
-            <h2>💵 Premium Dollar Shop</h2>
+            <div id="coinShopItems"></div>
             <h2>💎 Diamond Shop</h2>
+            <div id="diamondShopItems"></div>
         </div>
 
         <!-- 🎒 Inventory Tab -->
-        <div id="inventory-tab">
+        <div id="inventory-tab" class="page hidden">
             <h1>🎒 Inventory</h1>
-            <p>Your collected items.</p>
+            <div id="inventoryItems"></div>
         </div>
 
         <!-- 🎁 Rewards Tab -->
-        <div id="rewards-tab">
+        <div id="rewards-tab" class="page hidden">
             <h1>🎁 Weekly Rewards</h1>
-            <p>Come back every day and collect rewards.</p>
-            <ul>
-                <li>DAY 1 <strong>💵 50</strong></li>
-                <li>DAY 2 <strong>💵 100</strong></li>
-                <li>DAY 3 <strong>💎 1</strong></li>
-                <li>DAY 4 <strong>💵 250</strong></li>
-                <li>DAY 5 <strong>💎 2</strong></li>
-                <li>DAY 6 <strong>💵 500</strong></li>
-                <li>DAY 7 <strong>💎 5</strong></li>
-            </ul>
-            <button id="claim-reward-btn">🎁 Claim Reward</button>
-            <p>Checking...</p>
-            <p>GAME 03</p>
+            <p id="rewardTimer">Next reward in --h --m --s</p>
+            <button onclick="claimDailyReward()">🎁 Claim Reward</button>
         </div>
 
         <!-- 💣 Bomber Tab -->
-        <div id="bomber-tab">
+        <div id="bomber-tab" class="page hidden">
             <h1>💣 Bomber</h1>
-            <p>Choose the number of bombs and find the safe fields.</p>
-            <p>💣 Bombs <strong>3</strong></p>
-            <p>💎 Safe <strong>0</strong></p>
-            <p>💵 Win <strong>0</strong></p>
-            <h3>💣 Number of Bombs</h3>
-            <select id="bomb-select">
+            <label>Bombs:</label>
+            <select id="bomberBombSelector" onchange="changeBomberBombs()">
                 <option value="3">3 Bombs</option>
-                <option value="4">4 Bombs</option>
                 <option value="5">5 Bombs</option>
-                <option value="6">6 Bombs</option>
-                <option value="7">7 Bombs</option>
-                <option value="8">8 Bombs</option>
-                <option value="9">9 Bombs</option>
                 <option value="10">10 Bombs</option>
-                <option value="11">11 Bombs</option>
-                <option value="12">12 Bombs</option>
-                <option value="13">13 Bombs</option>
-                <option value="14">14 Bombs</option>
-                <option value="15">15 Bombs</option>
-                <option value="16">16 Bombs</option>
-                <option value="17">17 Bombs</option>
-                <option value="18">18 Bombs</option>
-                <option value="19">19 Bombs</option>
-                <option value="20">20 Bombs</option>
-                <option value="21">21 Bombs</option>
-                <option value="22">22 Bombs</option>
-                <option value="23">23 Bombs</option>
-                <option value="24">24 Bombs</option>
             </select>
-            <p>3 - 24 bombs</p>
-            <p>Current Multiplier <strong>1.00x</strong></p>
-            <button>READY</button>
-            <button id="start-bomber-btn">🎮 START GAME — 1 💎</button>
-            <button id="cashout-bomber-btn">💵 CASH OUT</button>
-            <p>Choose 3-24 bombs and press START GAME.</p>
-            <p>💣</p>
-            <h3>3–24 Bombs</h3>
-            <p>Choose how many bombs you want on the 25-field board.</p>
-            <p>💎</p>
-            <h3>Find Safe Fields</h3>
-            <p>More bombs mean fewer safe fields and a different possible payout.</p>
-            <p>🏦</p>
-            <h3>Cash Out</h3>
-            <p>Cash out your virtual winnings before hitting a bomb.</p>
-            <p>GAME 03</p>
+            <button id="bomberStartButton" onclick="startBomberGame()">🎮 START GAME</button>
+            <button id="bomberCashoutButton" onclick="cashOutBomber()" disabled>💵 CASH OUT</button>
+            <div id="bomberBoard" class="bomber-grid"></div>
+            <p>Bombs: <span id="bombCount">3</span> | Safe: <span id="safeCount">0</span></p>
+            <p>Multiplier: <span id="bomberMultiplier">1.00x</span> | Win: <span id="bomberWin">0 💎</span></p>
+            <div id="bomberStatus" class="bomber-status">READY</div>
         </div>
 
         <!-- 📈 Multiplier Tab -->
-        <div id="multiplier-tab">
+        <div id="multiplier-tab" class="page hidden">
             <h1>📈 Random Multiplier</h1>
-            <p>Watch the multiplier rise and cash out before the crash.</p>
-            <p>Current Multiplier <strong>1.00x</strong></p>
-            <button>READY</button>
-            <h3>💎 Bet</h3>
-            <input type="number" id="multiplier-bet-input" value="5">
-            <p>Starting bet: 5 💎</p>
-            <p>Step <strong>0 / 10</strong></p>
-            <p>Bet <strong>5.00 💎</strong></p>
-            <p>Potential Win <strong>5.00 💎</strong></p>
-            <p>🚀 Start the game to see the multiplier.</p>
-            <button id="start-multiplier-btn">🚀 START — 5 💎</button>
-            <button id="cashout-multiplier-btn">💰 CASH OUT</button>
-            <p>Multiplier can randomly rise or crash. You can cash out at any time.</p>
-            <h2>📊 Game Statistics</h2>
-            <p>📈</p>
-            <h3>Random Growth</h3>
-            <p>The multiplier randomly increases during the game.</p>
-            <p>💥</p>
-            <h3>Random Crash</h3>
-            <p>The multiplier can crash at any moment.</p>
-            <p>💰</p>
-            <h3>Cash Out</h3>
-            <p>Take your winnings before the multiplier crashes.</p>
-            <p>Random Multiplier <strong>💎 1.00x</strong></p>
+            <input type="number" id="crashBet" value="5">
+            <button id="crashStartButton" onclick="startCrashGame()">🚀 START</button>
+            <button id="crashCashoutButton" onclick="cashOutCrash()" disabled>💰 CASH OUT</button>
+            <h1 id="crashMultiplier">1.00x</h1>
+            <p>Step: <span id="crashStep">0 / 10</span></p>
+            <p>Bet: <span id="crashCurrentBet">5.00 💎</span> | Potential Win: <span id="crashPotentialWin">5.00 💎</span></p>
+            <div id="crashStatus" class="crash-status">READY</div>
+            <div id="crashGraph"></div>
+            <div id="crashHistory"></div>
         </div>
 
         <!-- 💳 Wallet Tab -->
-        <div id="wallet-tab">
+        <div id="wallet-tab" class="page hidden">
             <h1>💳 Wallet</h1>
-            <p>Manage your points, diamonds and withdrawal requests.</p>
-            <h2>⭐ Points</h2>
-            <p><strong>0</strong></p>
-            <p>1000 Points = 1 Diamond</p>
-            <button id="convert-points-btn">⭐ Convert 1000 Points → 1 💎</button>
-            <h2>💎 Diamonds</h2>
-            <p><strong>0</strong></p>
-            <p>1 Diamond = $1</p>
-            <h2>💵 Dollar Value</h2>
-            <p><strong>$ 0</strong></p>
-            <p>Demo balance</p>
-            <h2>🏦 Withdrawal Request</h2>
-            <p>Enter the amount you want to withdraw.</p>
-            <input type="number" id="withdraw-amount" placeholder="Diamonds">
-            <p>Withdrawal value: <strong>$ 0</strong></p>
-            <input type="text" id="withdraw-name" placeholder="Cardholder Name">
-            <input type="text" id="withdraw-card" placeholder="Card Number">
-            <button id="send-withdraw-btn">📤 Send Withdrawal Request</button>
-            <p>⚠ Demo mode: no real money is transferred yet.</p>
-            <h2>📋 Withdrawal Requests</h2>
+            <p>Points: <span id="walletPoints">0</span></p>
+            <button onclick="convertPointsToDiamonds()">⭐ Convert 1000 Points → 1 💎</button>
+            <p>Diamonds: <span id="walletDiamonds">0</span> ($<span id="walletDollarValue">0.00</span>)</p>
             
-            <!-- Այստեղ game.js-ը կավելացնի պատմությունը -->
+            <h2>🏦 Withdrawal Request</h2>
+            <input type="number" id="withdrawDiamonds" placeholder="Diamonds" oninput="updateWithdrawValue()">
+            <p>Withdrawal value: $<span id="withdrawDollarValueOutput">0.00</span></p>
+            <input type="text" id="withdrawName" placeholder="Cardholder Name">
+            <input type="text" id="withdrawCard" placeholder="Card Number" oninput="formatCardNumber(this)">
+            <button onclick="createWithdrawalRequest()">📤 Send Withdrawal Request</button>
             <div id="withdrawalHistory"></div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="auth.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
