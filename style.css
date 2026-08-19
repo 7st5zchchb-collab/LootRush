@@ -2286,3 +2286,454 @@ body.skin-golden {
   font-size: 24px;
   font-weight: bold;
 }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        color: white;
+
+        background:
+          radial-gradient(
+            circle at 20% 20%,
+            rgba(124, 92, 255, 0.35),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(0, 200, 255, 0.2),
+            transparent 30%
+          ),
+          linear-gradient(135deg, #03040a, #090d1d 50%, #050711);
+      }
+
+      /* =========================
+         3D BACKGROUND
+      ========================= */
+
+      .background {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .grid {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+
+        left: -50%;
+        top: 45%;
+
+        background-image:
+          linear-gradient(rgba(124, 92, 255, 0.15) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(124, 92, 255, 0.15) 1px, transparent 1px);
+
+        background-size: 70px 70px;
+
+        transform: perspective(500px) rotateX(65deg);
+
+        animation: gridMove 12s linear infinite;
+      }
+
+      @keyframes gridMove {
+        from {
+          transform: perspective(500px) rotateX(65deg) translateY(0);
+        }
+
+        to {
+          transform: perspective(500px) rotateX(65deg) translateY(70px);
+        }
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+
+        filter: blur(2px);
+
+        animation: float 7s ease-in-out infinite;
+      }
+
+      .orb1 {
+        width: 180px;
+        height: 180px;
+
+        top: 10%;
+        left: 8%;
+
+        background: rgba(124, 92, 255, 0.18);
+
+        box-shadow: 0 0 80px rgba(124, 92, 255, 0.5);
+      }
+
+      .orb2 {
+        width: 230px;
+        height: 230px;
+
+        bottom: 5%;
+        right: 8%;
+
+        background: rgba(0, 200, 255, 0.12);
+
+        box-shadow: 0 0 100px rgba(0, 200, 255, 0.4);
+
+        animation-delay: -3s;
+      }
+
+      .orb3 {
+        width: 90px;
+        height: 90px;
+
+        top: 25%;
+        right: 20%;
+
+        background: rgba(255, 80, 180, 0.12);
+
+        box-shadow: 0 0 60px rgba(255, 80, 180, 0.4);
+
+        animation-delay: -1s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) translateX(0);
+        }
+
+        50% {
+          transform: translateY(-30px) translateX(20px);
+        }
+      }
+
+      /* =========================
+         REGISTER CARD
+      ========================= */
+
+      .register-wrapper {
+        position: relative;
+        z-index: 2;
+
+        width: 430px;
+        max-width: calc(100% - 30px);
+
+        padding: 2px;
+
+        border-radius: 24px;
+
+        background: linear-gradient(
+          135deg,
+          rgba(124, 92, 255, 0.8),
+          rgba(0, 200, 255, 0.3),
+          rgba(124, 92, 255, 0.1)
+        );
+
+        box-shadow:
+          0 30px 100px rgba(0, 0, 0, 0.7),
+          0 0 50px rgba(124, 92, 255, 0.15);
+
+        transform: perspective(1000px) rotateX(2deg);
+
+        animation: cardAppear 0.8s ease;
+      }
+
+      @keyframes cardAppear {
+        from {
+          opacity: 0;
+          transform: perspective(1000px) rotateX(10deg) translateY(30px);
+        }
+
+        to {
+          opacity: 1;
+          transform: perspective(1000px) rotateX(2deg) translateY(0);
+        }
+      }
+
+      .register-card {
+        background: linear-gradient(
+          145deg,
+          rgba(17, 21, 34, 0.98),
+          rgba(7, 10, 20, 0.98)
+        );
+
+        border-radius: 22px;
+
+        padding: 40px 35px;
+
+        backdrop-filter: blur(20px);
+      }
+
+      /* =========================
+         LOGO
+      ========================= */
+
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .logo h1 {
+        font-size: 38px;
+        letter-spacing: -1px;
+      }
+
+      .logo h1 span {
+        color: #7c5cff;
+
+        text-shadow: 0 0 20px rgba(124, 92, 255, 0.6);
+      }
+
+      .logo p {
+        margin-top: 8px;
+
+        color: #7f879c;
+
+        font-size: 14px;
+      }
+
+      /* =========================
+         INPUTS
+      ========================= */
+
+      .input-group {
+        margin-bottom: 18px;
+      }
+
+      .input-group label {
+        display: block;
+
+        margin-bottom: 8px;
+
+        color: #aeb5c7;
+
+        font-size: 14px;
+
+        font-weight: bold;
+      }
+
+      .input-box {
+        position: relative;
+      }
+
+      .input-icon {
+        position: absolute;
+
+        left: 15px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        font-size: 18px;
+
+        opacity: 0.8;
+      }
+
+      input {
+        width: 100%;
+
+        padding: 14px 15px 14px 45px;
+
+        background: rgba(10, 13, 23, 0.9);
+
+        border: 1px solid #292f43;
+
+        border-radius: 11px;
+
+        outline: none;
+
+        color: white;
+
+        font-size: 15px;
+
+        transition: 0.25s;
+      }
+
+      input::placeholder {
+        color: #555d71;
+      }
+
+      input:focus {
+        border-color: #7c5cff;
+
+        box-shadow:
+          0 0 0 3px rgba(124, 92, 255, 0.12),
+          0 0 25px rgba(124, 92, 255, 0.12);
+      }
+
+      /* =========================
+         PASSWORD
+      ========================= */
+
+      .password-hint {
+        margin-top: 7px;
+
+        color: #626b80;
+
+        font-size: 11px;
+      }
+
+      /* =========================
+         TERMS
+      ========================= */
+
+      .terms {
+        display: flex;
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin: 20px 0;
+
+        color: #777f92;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+      }
+
+      .terms input {
+        width: 15px;
+        height: 15px;
+
+        margin-top: 2px;
+
+        padding: 0;
+
+        accent-color: #7c5cff;
+      }
+
+      .terms a {
+        color: #927aff;
+
+        text-decoration: none;
+      }
+
+      /* =========================
+         REGISTER BUTTON
+      ========================= */
+
+      .register-button {
+        width: 100%;
+
+        padding: 15px;
+
+        border: none;
+
+        border-radius: 11px;
+
+        background: linear-gradient(90deg, #6848e8, #8b6cff);
+
+        color: white;
+
+        font-size: 16px;
+
+        font-weight: bold;
+
+        cursor: pointer;
+
+        box-shadow: 0 10px 30px rgba(124, 92, 255, 0.25);
+
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .register-button:hover {
+        transform: translateY(-2px);
+
+        box-shadow: 0 15px 40px rgba(124, 92, 255, 0.4);
+      }
+
+      .register-button:active {
+        transform: translateY(0);
+      }
+
+      /* =========================
+         LOGIN
+      ========================= */
+
+      .login-text {
+        text-align: center;
+
+        margin-top: 25px;
+
+        color: #70788c;
+
+        font-size: 14px;
+      }
+
+      .login-text a {
+        color: #927aff;
+
+        font-weight: bold;
+
+        text-decoration: none;
+      }
+
+      .login-text a:hover {
+        text-decoration: underline;
+      }
+
+      /* =========================
+         MESSAGE
+      ========================= */
+
+      #message {
+        position: fixed;
+
+        z-index: 20;
+
+        left: 50%;
+        bottom: 25px;
+
+        transform: translateX(-50%) translateY(100px);
+
+        padding: 13px 22px;
+
+        background: #171c2a;
+
+        border: 1px solid #343c53;
+
+        border-radius: 10px;
+
+        color: white;
+
+        font-size: 14px;
+
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+        transition: 0.3s;
+
+        opacity: 0;
+      }
+
+      #message.show {
+        transform: translateX(-50%) translateY(0);
+
+        opacity: 1;
+      }
+
+      /* =========================
+         MOBILE
+      ========================= */
+
+      @media (max-width: 500px) {
+        .register-card {
+          padding: 30px 22px;
+        }
+
+        .logo h1 {
+          font-size: 32px;
+        }
+      }
