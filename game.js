@@ -439,18 +439,15 @@ async function buyWithStripe(item) {
   try {
     showMessage("⏳ Opening Stripe Checkout...");
 
-    const response = await fetch(
-      "http://localhost:3000/create-checkout-session",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itemName: item.name,
-          price: item.price,
-          currencyType: item.type,
-        }),
-      },
-    );
+    const response = await fetch("https://onrender.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemName: item.name,
+        price: item.price,
+        currencyType: item.type,
+      }),
+    });
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Payment error");
