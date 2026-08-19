@@ -20,7 +20,7 @@ let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 let currentSkin = localStorage.getItem("currentSkin") || "Default";
 let playerName = localStorage.getItem("playerName") || "Guest";
 let playerAvatar =
-  localStorage.getItem("playerAvatar") || "images/default-avatar.png";
+  localStorage.getItem("playerAvatar") || "default-avatar.png";
 
 /* =====================================================
    RANDOM LOOT ARRAY
