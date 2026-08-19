@@ -10,12 +10,14 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-// Սերվերին ստիպում ենք ճանաչել գլխավոր թղթապանակի CSS, JS և նկարները
-app.use(express.static(path.join(__dirname, "./")));
+// 1. Փոխեք ստատիկ ֆայլերի տողը (մոտավորապես 13-րդ տողում)
+app.use(express.static(path.join(__dirname, "./..")));
 
+// 2. Փոխեք index.html-ը բացելու տողը (մոտավորապես 17-րդ տողում)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "./", "index.html"));
+  res.sendFile(path.join(__dirname, "./..", "index.html"));
 });
+
 
 
 // Վաճառքի սեսիայի ստեղծում (Checkout Session)
