@@ -6,7 +6,7 @@
     <title>LootRush</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Սա ավտոմատ թաքցնում է գրանցման և խաղի էջերը, մինչև օգտատերը մուտք չգործի */
+        /* Ավտոմատ թաքցնում ենք խաղի հիմնական էջերը, մինչև մուտք գործելը */
         #register-container, 
         #app-dashboard, 
         #game-tab, 
@@ -28,10 +28,10 @@
         <p>Sign in to your account to continue</p>
         
         <label>Email Address</label>
-        <input type="email" placeholder="Enter your email">
+        <input type="email" id="login-email" placeholder="Enter your email">
         
         <label>Password</label>
-        <input type="password" placeholder="Enter your password">
+        <input type="password" id="login-password" placeholder="Enter your password">
         
         <button id="login-btn">🚪 Sign In</button>
         <p>Don't have an account? <a href="#" onclick="document.getElementById('auth-container').style.display='none'; document.getElementById('register-container').style.setProperty('display', 'block', 'important');">Register here</a></p>
@@ -43,13 +43,13 @@
         <p>Join LootRush and start winning rewards</p>
         
         <label>Username</label>
-        <input type="text" placeholder="Choose a username">
+        <input type="text" id="register-username" placeholder="Choose a username">
         
         <label>Email Address</label>
-        <input type="email" placeholder="Enter your email">
+        <input type="email" id="register-email" placeholder="Enter your email">
         
         <label>Password</label>
-        <input type="password" placeholder="Create a password">
+        <input type="password" id="register-password" placeholder="Create a password">
         
         <button id="register-btn">📝 Register</button>
         <p>Already have an account? <a href="#" onclick="document.getElementById('register-container').style.setProperty('display', 'none', 'important'); document.getElementById('auth-container').style.display='block';">Sign in here</a></p>
@@ -59,6 +59,7 @@
     <div id="app-dashboard">
         <h2>LootRush</h2>
         
+        <!-- Կոճակների ID-ները համապատասխանում են navigation-tabs-ի տաբերին -->
         <div class="navigation-tabs">
             <button>🎲 Game</button>
             <button>🛒 Shop</button>
@@ -70,11 +71,11 @@
         </div>
 
         <div class="user-info">
-            <p>Player: <span>Guest</span></p>
+            <p>Player: <span id="username-display">Guest</span></p>
             <p>👤 Guest</p>
-            <button>🖼 Change Photo</button>
-            <input type="file" style="display:none;">
-            <button>🚪 Log Out</button>
+            <button id="change-photo-btn">🖼 Change Photo</button>
+            <input type="file" id="avatar-input" style="display:none;">
+            <button id="logout-btn">🚪 Log Out</button>
             <p>Skin: Default</p>
             <p>💵 150</p>
             <p>💎 0</p>
@@ -90,7 +91,7 @@
             <h2>Mystery Box</h2>
             <p>Press the button to roll.</p>
             <h3>?</h3>
-            <button>🎲 ROLL - 150 💵</button>
+            <button id="roll-btn">🎲 ROLL - 150 💵</button>
             <p><strong>Total Rolls</strong> 0</p>
             <p><strong>Best Streak</strong> 0</p>
             <p><strong>Rare Items</strong> 0</p>
@@ -124,7 +125,7 @@
                 <li>DAY 6 <strong>💵 500</strong></li>
                 <li>DAY 7 <strong>💎 5</strong></li>
             </ul>
-            <button>🎁 Claim Reward</button>
+            <button id="claim-reward-btn">🎁 Claim Reward</button>
             <p>Checking...</p>
             <p>GAME 03</p>
         </div>
@@ -137,35 +138,35 @@
             <p>💎 Safe <strong>0</strong></p>
             <p>💵 Win <strong>0</strong></p>
             <h3>💣 Number of Bombs</h3>
-            <select>
-                <option>3 Bombs</option>
-                <option>4 Bombs</option>
-                <option>5 Bombs</option>
-                <option>6 Bombs</option>
-                <option>7 Bombs</option>
-                <option>8 Bombs</option>
-                <option>9 Bombs</option>
-                <option>10 Bombs</option>
-                <option>11 Bombs</option>
-                <option>12 Bombs</option>
-                <option>13 Bombs</option>
-                <option>14 Bombs</option>
-                <option>15 Bombs</option>
-                <option>16 Bombs</option>
-                <option>17 Bombs</option>
-                <option>18 Bombs</option>
-                <option>19 Bombs</option>
-                <option>20 Bombs</option>
-                <option>21 Bombs</option>
-                <option>22 Bombs</option>
-                <option>23 Bombs</option>
-                <option>24 Bombs</option>
+            <select id="bomb-select">
+                <option value="3">3 Bombs</option>
+                <option value="4">4 Bombs</option>
+                <option value="5">5 Bombs</option>
+                <option value="6">6 Bombs</option>
+                <option value="7">7 Bombs</option>
+                <option value="8">8 Bombs</option>
+                <option value="9">9 Bombs</option>
+                <option value="10">10 Bombs</option>
+                <option value="11">11 Bombs</option>
+                <option value="12">12 Bombs</option>
+                <option value="13">13 Bombs</option>
+                <option value="14">14 Bombs</option>
+                <option value="15">15 Bombs</option>
+                <option value="16">16 Bombs</option>
+                <option value="17">17 Bombs</option>
+                <option value="18">18 Bombs</option>
+                <option value="19">19 Bombs</option>
+                <option value="20">20 Bombs</option>
+                <option value="21">21 Bombs</option>
+                <option value="22">22 Bombs</option>
+                <option value="23">23 Bombs</option>
+                <option value="24">24 Bombs</option>
             </select>
             <p>3 - 24 bombs</p>
             <p>Current Multiplier <strong>1.00x</strong></p>
             <button>READY</button>
-            <button>🎮 START GAME — 1 💎</button>
-            <button>💵 CASH OUT</button>
+            <button id="start-bomber-btn">🎮 START GAME — 1 💎</button>
+            <button id="cashout-bomber-btn">💵 CASH OUT</button>
             <p>Choose 3-24 bombs and press START GAME.</p>
             <p>💣</p>
             <h3>3–24 Bombs</h3>
@@ -186,14 +187,14 @@
             <p>Current Multiplier <strong>1.00x</strong></p>
             <button>READY</button>
             <h3>💎 Bet</h3>
-            <input type="number" value="5">
+            <input type="number" id="multiplier-bet-input" value="5">
             <p>Starting bet: 5 💎</p>
             <p>Step <strong>0 / 10</strong></p>
             <p>Bet <strong>5.00 💎</strong></p>
             <p>Potential Win <strong>5.00 💎</strong></p>
             <p>🚀 Start the game to see the multiplier.</p>
-            <button>🚀 START — 5 💎</button>
-            <button>💰 CASH OUT</button>
+            <button id="start-multiplier-btn">🚀 START — 5 💎</button>
+            <button id="cashout-multiplier-btn">💰 CASH OUT</button>
             <p>Multiplier can randomly rise or crash. You can cash out at any time.</p>
             <h2>📊 Game Statistics</h2>
             <p>📈</p>
@@ -215,7 +216,7 @@
             <h2>⭐ Points</h2>
             <p><strong>0</strong></p>
             <p>1000 Points = 1 Diamond</p>
-            <button>⭐ Convert 1000 Points → 1 💎</button>
+            <button id="convert-points-btn">⭐ Convert 1000 Points → 1 💎</button>
             <h2>💎 Diamonds</h2>
             <p><strong>0</strong></p>
             <p>1 Diamond = $1</p>
@@ -224,13 +225,16 @@
             <p>Demo balance</p>
             <h2>🏦 Withdrawal Request</h2>
             <p>Enter the amount you want to withdraw.</p>
-            <input type="number" placeholder="Diamonds">
+            <input type="number" id="withdraw-amount" placeholder="Diamonds">
             <p>Withdrawal value: <strong>$ 0</strong></p>
-            <input type="text" placeholder="Cardholder Name">
-            <input type="text" placeholder="Card Number">
-            <button>📤 Send Withdrawal Request</button>
+            <input type="text" id="withdraw-name" placeholder="Cardholder Name">
+            <input type="text" id="withdraw-card" placeholder="Card Number">
+            <button id="send-withdraw-btn">📤 Send Withdrawal Request</button>
             <p>⚠ Demo mode: no real money is transferred yet.</p>
             <h2>📋 Withdrawal Requests</h2>
+            
+            <!-- Այստեղ game.js-ը կավելացնի պատմությունը -->
+            <div id="withdrawalHistory"></div>
         </div>
     </div>
 
@@ -239,4 +243,3 @@
     <script src="game.js"></script>
 </body>
 </html>
-
