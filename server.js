@@ -7,24 +7,29 @@ const fs = require('fs');
 
 const app = express();
 
-// Թույլատրում ենք կապը ֆրոնտենդի (խաղի) հետ
+// Թույլատրում ենք կապը ֆրոնտենդի հետ
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-app.use(express.static(__dirname));
+// ԽԵԼԱՑԻ ՍՏԱՏԻԿ ՖԱՅԼԵՐԻ ՄԻԱՑՈՒՄ (Միացնում է բոլոր հնարավոր թղթապանակները)
+app.use(express.static(path.join(__dirname, "../"))); 
 app.use(express.static(path.join(__dirname, "./")));
+app.use(express.static(path.join(process.cwd())));
 
 // index.html-ի ավտոմատ որոնում և բացում
 app.get("/", (req, res) => {
-  const rootPath = path.join(__dirname, "../", "index.html");
-  const serverPath = path.join(__dirname, "./", "index.html");
+  const paths = [
+    path.join(__dirname, "../", "index.html"),
+    path.join(__dirname, "./", "index.html"),
+    path.join(process.cwd(), "index.html")
+  ];
   
-  if (fs.existsSync(rootPath)) {
-    res.sendFile(rootPath);
-  } else if (fs.existsSync(serverPath)) {
-    res.sendFile(serverPath);
+  const validPath = paths.find(p => fs.existsSync(p));
+  
+  if (validPath) {
+    res.sendFile(validPath);
   } else {
-    res.status(404).send("index.html file not found in root or server directory!");
+    res.status(404).send("Error: index.html was not found anywhere in the repository!");
   }
 });
 
@@ -64,7 +69,7 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// Սերվերի միացում Render-ի համար
+// Սերվերի միացում
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`LootRush server running on port ${PORT}`);
