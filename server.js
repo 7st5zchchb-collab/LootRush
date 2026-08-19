@@ -3,6 +3,7 @@ const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
 const path = require("path");
+const fs = require('fs');
 
 const app = express();
 
@@ -10,15 +11,23 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-// 1. Փոխեք ստատիկ ֆայլերի տողը (մոտավորապես 13-րդ տողում)
-app.use(express.static(path.join(__dirname, "./..")));
+// Ստատիկ ֆայլերի (CSS/JS) միացում երկու տարբերակով էլ
+app.use(express.static(path.join(__dirname, "../")));
+app.use(express.static(path.join(__dirname, "./")));
 
-// 2. Փոխեք index.html-ը բացելու տողը (մոտավորապես 17-րդ տողում)
+// index.html-ի ավտոմատ որոնում և բացում
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "./..", "index.html"));
+  const rootPath = path.join(__dirname, "../", "index.html");
+  const serverPath = path.join(__dirname, "./", "index.html");
+  
+  if (fs.existsSync(rootPath)) {
+    res.sendFile(rootPath);
+  } else if (fs.existsSync(serverPath)) {
+    res.sendFile(serverPath);
+  } else {
+    res.status(404).send("index.html file not found in root or server directory!");
+  }
 });
-
-
 
 // Վաճառքի սեսիայի ստեղծում (Checkout Session)
 app.post("/create-checkout-session", async (req, res) => {
@@ -56,7 +65,7 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// Սերվերի միացում Render-ի համար ճիշտ PORT-ով
+// Սերվերի միացում Render-ի համար
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`LootRush server running on port ${PORT}`);
