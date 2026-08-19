@@ -11,8 +11,7 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-// Ստատիկ ֆայլերի (CSS/JS) միացում երկու տարբերակով էլ
-app.use(express.static(path.join(__dirname, "../")));
+app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, "./")));
 
 // index.html-ի ավտոմատ որոնում և բացում
