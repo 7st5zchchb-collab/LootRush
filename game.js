@@ -1208,17 +1208,21 @@ function renderWithdrawalHistory() {
     );
     return;
   }
-  container.innerHTML = requests
-    .map((request) => (
+    container.innerHTML = requests
+    .map(
+      (request) => `
       <div class="item">
-        {" "}
-        <h2>💎 ${Number(request.amount).toFixed(2)}</h2> <p>${request.name}</p>
-        <p>${request.card}</p> <strong>${request.status}</strong>
-        <p>${request.date}</p>{" "}
+        <h2>$${Number(request.amount).toFixed(2)}</h2>
+        <p>${request.name || ''}</p>
+        <p>${request.card || ''}</p>
+        <p><strong>${request.status || 'Pending'}</strong></p>
+        <p>${request.date || ''}</p>
       </div>
-    ))
+    `
+    )
     .join("");
 }
+
 /* =====================================================GLOBAL EVENT LISTENERS===================================================== */ document.addEventListener(
   "click",
   (event) => {
