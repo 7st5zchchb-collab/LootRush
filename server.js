@@ -2,16 +2,23 @@ require("dotenv").config();
 const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
 // Թույլատրում ենք կապը ֆրոնտենդի (խաղի) հետ
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
-const path = require("path");
+
+// Սերվերին ստիպում ենք ճանաչել գլխավոր թղթապանակի CSS, JS և նկարները
 app.use(express.static(path.join(__dirname, "../")));
 
-// Վճարման սեսիայի ստեղծում (Checkout Session)
+// Այս տողը 100%-ով կբացի ձեր index.html կայքը գլխավոր հղումով
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../", "index.html"));
+});
+
+// Վաճառքի սեսիայի ստեղծում (Checkout Session)
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const { itemName, price, currencyType } = req.body;
@@ -20,7 +27,6 @@ app.post("/create-checkout-session", async (req, res) => {
       return res.status(400).json({ error: "Missing product information" });
     }
 
-    // Ստեղծում ենք վճարման էջը Stripe-ում
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -31,7 +37,7 @@ app.post("/create-checkout-session", async (req, res) => {
               name: itemName,
               description: `Purchase for LootRush Game (${currencyType || "In-game item"})`,
             },
-            unit_amount: Math.round(price * 100), // Stripe-ը գումարը ընդունում է ցենտերով (օր. $4.99 = 499)
+            unit_amount: Math.round(price * 100),
           },
           quantity: 1,
         },
@@ -48,8 +54,9 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// Սերվերի միացում
-const PORT = process.env.PORT || 3000;
+// Սերվերի միացում Render-ի համար ճիշտ PORT-ով
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`LootRush server running on http://localhost:${PORT}`);
+  console.log(`LootRush server running on port ${PORT}`);
 });
+
