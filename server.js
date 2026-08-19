@@ -9,15 +9,15 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-// Քանի որ ամեն ինչ նույն թղթապանակում է, օգտագործում ենք ընթացիկ հասցեն
-app.use(express.static(__dirname));
+// Սա ստիպում է Express-ին ճիշտ տարածել ԱՄԲՈՂՋ պրոյեկտի ֆայլերը (HTML, CSS, JS, նկարներ)
+app.use(express.static(path.join(__dirname)));
 
 // Բացում ենք index.html-ը գլխավոր էջում
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Stripe Checkout
+// Stripe Checkout Session
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const { itemName, price, currencyType } = req.body;
