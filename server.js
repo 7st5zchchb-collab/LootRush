@@ -9,8 +9,8 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
-// Սա ստիպում է Express-ին ճիշտ տարածել ԱՄԲՈՂՋ պրոյեկտի ֆայլերը (HTML, CSS, JS, նկարներ)
-app.use(express.static(path.join(__dirname)));
+// Սա 100%-ով ճիշտ կմիացնի նույն թղթապանակում գտնվող բոլոր JS և CSS ֆայլերը
+app.use(express.static(path.join(__dirname, './')));
 
 // Բացում ենք index.html-ը գլխավոր էջում
 app.get("/", (req, res) => {
