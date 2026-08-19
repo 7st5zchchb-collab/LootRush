@@ -11,12 +11,12 @@ app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
 // Սերվերին ստիպում ենք ճանաչել գլխավոր թղթապանակի CSS, JS և նկարները
-app.use(express.static(path.join(__dirname, "../")));
+app.use(express.static(path.join(__dirname, "./")));
 
-// Այս տողը 100%-ով կբացի ձեր index.html կայքը գլխավոր հղումով
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../", "index.html"));
+  res.sendFile(path.join(__dirname, "./", "index.html"));
 });
+
 
 // Վաճառքի սեսիայի ստեղծում (Checkout Session)
 app.post("/create-checkout-session", async (req, res) => {
