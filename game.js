@@ -1,15 +1,13 @@
 /* =====================================================
    LOOTRUSH - COMPLETE GAME.JS
-   FULL CORRECTED VERSION
+   FIXED + STRIPE + SHOP + BOMBER + CRASH + AUTH
 ===================================================== */
 
 /* =====================================================
-   STRIPE SERVER URL
+   STRIPE SERVER
 ===================================================== */
 
-// Օրինակ՝
-// https://lootrush-stripe-server.onrender.com
-const STRIPE_SERVER_URL = "https://YOUR-RENDER-SERVER.onrender.com";
+const STRIPE_SERVER_URL = "https://lootrush-jy0e.onrender.com";
 
 /* =====================================================
    GLOBAL DATA
@@ -32,7 +30,7 @@ let playerAvatar =
   localStorage.getItem("playerAvatar") || "default-avatar.png";
 
 /* =====================================================
-   RANDOM LOOT ARRAY
+   RANDOM LOOT
 ===================================================== */
 
 const loot = [
@@ -45,7 +43,6 @@ const loot = [
     type: "coins",
     chance: 45
   },
-
   {
     name: "Big Coin Bag",
     icon: "🪙",
@@ -55,7 +52,6 @@ const loot = [
     type: "coins",
     chance: 25
   },
-
   {
     name: "Diamond",
     icon: "💎",
@@ -65,7 +61,6 @@ const loot = [
     type: "diamonds",
     chance: 15
   },
-
   {
     name: "Diamond Pack",
     icon: "💎💎",
@@ -75,7 +70,6 @@ const loot = [
     type: "diamonds",
     chance: 8
   },
-
   {
     name: "Golden Chest",
     icon: "🧰",
@@ -85,7 +79,6 @@ const loot = [
     type: "coins",
     chance: 5
   },
-
   {
     name: "Mystery Crown",
     icon: "👑",
@@ -98,7 +91,7 @@ const loot = [
 ];
 
 /* =====================================================
-   COIN SHOP ARRAY
+   COIN SHOP
 ===================================================== */
 
 const coinShop = [
@@ -109,7 +102,6 @@ const coinShop = [
     type: "coins",
     skin: "Shadow"
   },
-
   {
     name: "Fire Skin",
     icon: "🔥",
@@ -117,7 +109,6 @@ const coinShop = [
     type: "coins",
     skin: "Fire"
   },
-
   {
     name: "Ice Skin",
     icon: "❄️",
@@ -141,7 +132,6 @@ const diamondShop = [
     type: "dollarDiamonds",
     productId: "diamonds_50"
   },
-
   {
     name: "100 Diamonds",
     icon: "💎",
@@ -151,7 +141,6 @@ const diamondShop = [
     type: "dollarDiamonds",
     productId: "diamonds_100"
   },
-
   {
     name: "250 Diamonds",
     icon: "💎",
@@ -161,7 +150,6 @@ const diamondShop = [
     type: "dollarDiamonds",
     productId: "diamonds_250"
   },
-
   {
     name: "500 Diamonds",
     icon: "💎",
@@ -171,7 +159,6 @@ const diamondShop = [
     type: "dollarDiamonds",
     productId: "diamonds_500"
   },
-
   {
     name: "1000 Diamonds",
     icon: "💎",
@@ -221,21 +208,20 @@ let crashTotalWon =
   Number(localStorage.getItem("crashTotalWon")) || 0;
 
 /* =====================================================
-   INIT GAME
+   INIT
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   updateAllUI();
-
   initShop();
   renderInventory();
-
   initBomber();
   initCrashGame();
-
   checkAuth();
   startRewardTimer();
   checkStripePayment();
+
+  renderCrashHistory();
 
   setInterval(saveGame, 3000);
 });
@@ -281,6 +267,8 @@ function updateAllUI() {
   updateProfile();
   updateSkin();
   updateWallet();
+  updateBomberUI();
+  updateCrashUI();
 }
 
 /* =====================================================
@@ -418,9 +406,13 @@ function showPage(pageId) {
 let messageTimer;
 
 function showMessage(text) {
-  const message = document.getElementById("message");
+  const message =
+    document.getElementById("message");
 
-  if (!message) return;
+  if (!message) {
+    console.log(text);
+    return;
+  }
 
   message.textContent = text;
   message.classList.add("show");
@@ -469,9 +461,12 @@ function rollLoot() {
   const item = getRandomLoot();
 
   if (
-    ["RARE", "EPIC", "LEGENDARY", "MYTHIC"].includes(
-      item.rarity
-    )
+    [
+      "RARE",
+      "EPIC",
+      "LEGENDARY",
+      "MYTHIC"
+    ].includes(item.rarity)
   ) {
     rareItems++;
     streak++;
@@ -521,7 +516,8 @@ function rollLoot() {
   }
 
   if (description) {
-    description.textContent = item.description;
+    description.textContent =
+      item.description;
   }
 
   if (reward) {
@@ -534,7 +530,9 @@ function rollLoot() {
   updateAllUI();
   saveGame();
 
-  showMessage(`🎉 You won ${item.name}!`);
+  showMessage(
+    `🎉 You won ${item.name}!`
+  );
 }
 
 /* =====================================================
@@ -562,7 +560,9 @@ function renderInventory() {
   const container =
     document.getElementById("inventoryItems");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   container.innerHTML = "";
 
@@ -579,16 +579,27 @@ function renderInventory() {
   }
 
   inventory.forEach((item) => {
-    const card = document.createElement("div");
+    const card =
+      document.createElement("div");
 
-    card.className = "item inventory-card";
+    card.className =
+      "item inventory-card";
 
     card.innerHTML = `
-      <div class="item-icon">${item.icon}</div>
+      <div class="item-icon">
+        ${item.icon}
+      </div>
+
       <h2>${item.name}</h2>
+
       <p>${item.rarity}</p>
+
       <strong>×${item.amount}</strong>
-      <button class="equip-button" disabled>
+
+      <button
+        class="equip-button"
+        disabled
+      >
         Item
       </button>
     `;
@@ -603,16 +614,6 @@ function renderInventory() {
 
 async function buyWithStripe(item) {
   try {
-    if (
-      !STRIPE_SERVER_URL ||
-      STRIPE_SERVER_URL.includes("YOUR-RENDER")
-    ) {
-      showMessage(
-        "❌ Set your Render server URL in game.js first."
-      );
-      return;
-    }
-
     showMessage(
       "⏳ Opening Stripe Checkout..."
     );
@@ -630,8 +631,7 @@ async function buyWithStripe(item) {
           itemName: item.name,
           price: item.price,
           currencyType: item.type,
-          productId: item.productId,
-          diamonds: item.diamonds
+          productId: item.productId
         })
       }
     );
@@ -651,6 +651,7 @@ async function buyWithStripe(item) {
     }
 
     window.location.href = data.url;
+
   } catch (error) {
     console.error(
       "Stripe error:",
@@ -664,7 +665,7 @@ async function buyWithStripe(item) {
 }
 
 /* =====================================================
-   CHECK STRIPE PAYMENT
+   STRIPE PAYMENT RESULT
 ===================================================== */
 
 function checkStripePayment() {
@@ -702,7 +703,7 @@ function checkStripePayment() {
       );
     } else {
       showMessage(
-        "✅ Payment successful!"
+        "✅ Payment successful! Product processed."
       );
     }
 
@@ -747,11 +748,18 @@ function initShop() {
   );
 }
 
-function renderShop(containerId, items) {
+function renderShop(
+  containerId,
+  items
+) {
   const container =
-    document.getElementById(containerId);
+    document.getElementById(
+      containerId
+    );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   container.innerHTML = "";
 
@@ -761,7 +769,9 @@ function renderShop(containerId, items) {
 
     card.className = "item";
 
-    if (item.type === "dollars") {
+    if (
+      item.type === "dollars"
+    ) {
       card.classList.add(
         "premium-item"
       );
@@ -802,7 +812,9 @@ function renderShop(containerId, items) {
       `;
     }
 
-    if (item.type === "dollarDiamonds") {
+    if (
+      item.type === "dollarDiamonds"
+    ) {
       priceHTML = `
         <div class="diamond-price">
           <span class="old-price">
@@ -816,19 +828,20 @@ function renderShop(containerId, items) {
       `;
     }
 
-    const diamondsText =
-      item.diamonds
-        ? `<p>Get ${item.diamonds} 💎</p>`
-        : "";
-
     card.innerHTML = `
       <div class="item-icon">
         ${item.icon}
       </div>
 
-      <h2>${item.name}</h2>
+      <h2>
+        ${item.name}
+      </h2>
 
-      ${diamondsText}
+      ${
+        item.diamonds
+          ? `<p>Get ${item.diamonds} 💎</p>`
+          : ""
+      }
 
       ${priceHTML}
 
@@ -860,11 +873,11 @@ function renderShop(containerId, items) {
 ===================================================== */
 
 async function buySkin(item) {
-  /* ============================
-     COINS
-  ============================ */
+
+  /* COINS */
 
   if (item.type === "coins") {
+
     if (coins < item.price) {
       showMessage(
         "❌ Not enough coins!"
@@ -897,11 +910,10 @@ async function buySkin(item) {
     return;
   }
 
-  /* ============================
-     DIAMONDS
-  ============================ */
+  /* DIAMONDS */
 
   if (item.type === "diamonds") {
+
     if (diamonds < item.price) {
       showMessage(
         "❌ Not enough diamonds!"
@@ -930,9 +942,7 @@ async function buySkin(item) {
     return;
   }
 
-  /* ============================
-     STRIPE
-  ============================ */
+  /* STRIPE */
 
   if (
     item.type === "dollars" ||
@@ -977,7 +987,9 @@ function checkAuth() {
       "authOverlay"
     );
 
-  if (!overlay) return;
+  if (!overlay) {
+    return;
+  }
 
   if (loggedIn === "true") {
     overlay.classList.add(
@@ -1027,22 +1039,18 @@ function switchAuthForm(type) {
 function handleRegister() {
   const username =
     document
-      .getElementById(
-        "regUsername"
-      )
+      .getElementById("regUsername")
       ?.value.trim();
 
   const email =
     document
-      .getElementById(
-        "regEmail"
-      )
+      .getElementById("regEmail")
       ?.value.trim();
 
   const password =
-    document.getElementById(
-      "regPassword"
-    )?.value;
+    document
+      .getElementById("regPassword")
+      ?.value;
 
   if (
     !username ||
@@ -1078,13 +1086,13 @@ function handleRegister() {
 
   playerName = username;
 
+  updateProfile();
+
   showMessage(
     "✅ Account created successfully!"
   );
 
-  switchAuthForm(
-    "login"
-  );
+  switchAuthForm("login");
 }
 
 /* =====================================================
@@ -1094,15 +1102,13 @@ function handleRegister() {
 function handleLogin() {
   const email =
     document
-      .getElementById(
-        "loginEmail"
-      )
+      .getElementById("loginEmail")
       ?.value.trim();
 
   const password =
-    document.getElementById(
-      "loginPassword"
-    )?.value;
+    document
+      .getElementById("loginPassword")
+      ?.value;
 
   const savedEmail =
     localStorage.getItem(
@@ -1154,9 +1160,7 @@ function handleLogin() {
     .getElementById(
       "authOverlay"
     )
-    ?.classList.add(
-      "hidden"
-    );
+    ?.classList.add("hidden");
 
   showMessage(
     "✅ Welcome to LootRush!"
@@ -1204,14 +1208,16 @@ function togglePlayerMenu() {
 }
 
 /* =====================================================
-   CHANGE AVATAR
+   AVATAR
 ===================================================== */
 
 function changeAvatar(event) {
   const file =
     event.target.files[0];
 
-  if (!file) return;
+  if (!file) {
+    return;
+  }
 
   const reader =
     new FileReader();
@@ -1244,32 +1250,26 @@ const dailyRewards = [
     type: "coins",
     amount: 50
   },
-
   {
     type: "coins",
     amount: 100
   },
-
   {
     type: "diamonds",
     amount: 1
   },
-
   {
     type: "coins",
     amount: 250
   },
-
   {
     type: "diamonds",
     amount: 2
   },
-
   {
     type: "coins",
     amount: 500
   },
-
   {
     type: "diamonds",
     amount: 5
@@ -1348,10 +1348,11 @@ function startRewardTimer() {
         "rewardTimer"
       );
 
-    if (!timer) return;
+    if (!timer) {
+      return;
+    }
 
-    const now =
-      new Date();
+    const now = new Date();
 
     const tomorrow =
       new Date(now);
@@ -1389,6 +1390,7 @@ function startRewardTimer() {
 
     timer.textContent =
       `Next reward in ${hours}h ${minutes}m ${seconds}s`;
+
   }, 1000);
 }
 
@@ -1458,13 +1460,16 @@ function createBomberBoard() {
       "bomberBoard"
     );
 
-  if (!board) return;
+  if (!board) {
+    return;
+  }
 
   board.innerHTML = "";
 
   bomberBoard = [];
 
   for (let i = 0; i < 25; i++) {
+
     const button =
       document.createElement(
         "button"
@@ -1473,8 +1478,7 @@ function createBomberBoard() {
     button.className =
       "bomber-cell";
 
-    button.textContent =
-      "❓";
+    button.textContent = "❓";
 
     button.disabled =
       bomberGameActive === false;
@@ -1500,7 +1504,9 @@ function createBomberBoard() {
 ===================================================== */
 
 function startBomberGame() {
-  if (bomberGameActive) return;
+  if (bomberGameActive) {
+    return;
+  }
 
   if (diamonds < bomberBet) {
     showMessage(
@@ -1544,9 +1550,8 @@ function startBomberGame() {
         random
       );
 
-      bomberBoard[
-        random
-      ].bomb = true;
+      bomberBoard[random].bomb =
+        true;
     }
   }
 
@@ -1557,9 +1562,8 @@ function startBomberGame() {
       ".bomber-cell"
     )
     .forEach(
-      (cell) => {
-        cell.disabled = false;
-      }
+      (cell) =>
+        (cell.disabled = false)
     );
 
   const startButton =
@@ -1609,18 +1613,12 @@ function openBomberCell(index) {
     return;
   }
 
-  bomberBoard[
-    index
-  ].opened = true;
+  bomberBoard[index].opened =
+    true;
 
-  if (
-    bomberBoard[index].bomb
-  ) {
+  if (bomberBoard[index].bomb) {
     cell.textContent = "💣";
-
-    cell.classList.add(
-      "bomb"
-    );
+    cell.classList.add("bomb");
 
     bomberGameActive = false;
 
@@ -1643,11 +1641,7 @@ function openBomberCell(index) {
     );
 
   cell.textContent = "💎";
-
-  cell.classList.add(
-    "safe"
-  );
-
+  cell.classList.add("safe");
   cell.disabled = true;
 
   const cashoutButton =
@@ -1656,8 +1650,7 @@ function openBomberCell(index) {
     );
 
   if (cashoutButton) {
-    cashoutButton.disabled =
-      false;
+    cashoutButton.disabled = false;
   }
 
   const safeFields =
@@ -1677,10 +1670,8 @@ function openBomberCell(index) {
     diamonds += win;
 
     revealBomberBoard();
-
     updateAllUI();
     updateBomberUI();
-
     saveGame();
 
     showMessage(
@@ -1708,9 +1699,7 @@ function calculateBomberMultiplier(
 
   return Math.max(
     1,
-    Number(
-      base.toFixed(2)
-    )
+    Number(base.toFixed(2))
   );
 }
 
@@ -1739,7 +1728,6 @@ function cashOutBomber() {
 
   updateAllUI();
   updateBomberUI();
-
   saveGame();
 
   showMessage(
@@ -1803,7 +1791,7 @@ function updateBomberUI() {
       "bomberWin"
     );
 
-  const multiplier =
+  const bomberMultiplierElement =
     document.getElementById(
       "bomberMultiplier"
     );
@@ -1825,11 +1813,12 @@ function updateBomberUI() {
       ) + " 💎";
   }
 
-  if (multiplier) {
-    multiplier.textContent =
-      bomberMultiplier.toFixed(
-        2
-      ) + "x";
+  if (
+    bomberMultiplierElement
+  ) {
+    bomberMultiplierElement.textContent =
+      bomberMultiplier.toFixed(2) +
+      "x";
   }
 
   const status =
@@ -1875,11 +1864,10 @@ function startCrashGame() {
       )?.value
     ) || 5;
 
-  crashBet =
-    Math.max(
-      1,
-      Math.floor(crashBet)
-    );
+  crashBet = Math.max(
+    1,
+    Math.floor(crashBet)
+  );
 
   if (diamonds < crashBet) {
     showMessage(
@@ -1907,7 +1895,7 @@ function startCrashGame() {
 }
 
 /* =====================================================
-   RUN CRASH STEP
+   CRASH STEP
 ===================================================== */
 
 function runCrashStep() {
@@ -1963,8 +1951,7 @@ function runCrashStep() {
     updateCrashUI();
 
     if (
-      crashMultiplier <=
-      0.01
+      crashMultiplier <= 0.01
     ) {
       crashGameLose();
       return;
@@ -2061,7 +2048,6 @@ function cashOutCrash() {
   }
 
   saveGame();
-
   updateAllUI();
   updateCrashUI();
   renderCrashHistory();
@@ -2175,9 +2161,8 @@ function updateCrashUI() {
 
   if (multiplier) {
     multiplier.textContent =
-      crashMultiplier.toFixed(
-        2
-      ) + "x";
+      crashMultiplier.toFixed(2) +
+      "x";
   }
 
   if (step) {
@@ -2272,7 +2257,9 @@ function renderCrashGraph() {
       "crashGraph"
     );
 
-  if (!graph) return;
+  if (!graph) {
+    return;
+  }
 
   graph.innerHTML = "";
 
@@ -2320,7 +2307,9 @@ function renderCrashHistory() {
       "crashHistory"
     );
 
-  if (!history) return;
+  if (!history) {
+    return;
+  }
 
   history.innerHTML = `
     <div class="crash-history-card">
@@ -2394,7 +2383,7 @@ function updateWallet() {
 }
 
 /* =====================================================
-   POINTS -> DIAMONDS
+   POINTS TO DIAMONDS
 ===================================================== */
 
 function convertPointsToDiamonds() {
@@ -2443,7 +2432,7 @@ function updateWithdrawValue() {
 }
 
 /* =====================================================
-   FORMAT CARD NUMBER
+   CARD NUMBER FORMAT
 ===================================================== */
 
 function formatCardNumber(input) {
@@ -2472,7 +2461,7 @@ function formatCardNumber(input) {
 }
 
 /* =====================================================
-   WITHDRAWAL
+   WITHDRAWAL REQUEST
 ===================================================== */
 
 function createWithdrawalRequest() {
@@ -2497,10 +2486,7 @@ function createWithdrawalRequest() {
       )
       ?.value.trim();
 
-  if (
-    !amount ||
-    amount <= 0
-  ) {
+  if (!amount || amount <= 0) {
     showMessage(
       "❌ Enter a valid diamond amount."
     );
@@ -2573,7 +2559,9 @@ function renderWithdrawalHistory() {
       "withdrawalHistory"
     );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   const requests =
     JSON.parse(
@@ -2598,15 +2586,20 @@ function renderWithdrawalHistory() {
       .map(
         (request) => `
           <div class="item">
+
             <h2>
               💎 $${Number(
                 request.amount
               ).toFixed(2)}
             </h2>
 
-            <p>${request.name}</p>
+            <p>
+              ${request.name}
+            </p>
 
-            <p>${request.card}</p>
+            <p>
+              ${request.card}
+            </p>
 
             <strong>
               ${request.status}
@@ -2615,6 +2608,7 @@ function renderWithdrawalHistory() {
             <p>
               ${request.date}
             </p>
+
           </div>
         `
       )
@@ -2622,7 +2616,7 @@ function renderWithdrawalHistory() {
 }
 
 /* =====================================================
-   GLOBAL CLICK LISTENER
+   GLOBAL CLICK
 ===================================================== */
 
 document.addEventListener(
@@ -2671,8 +2665,21 @@ document.addEventListener(
 );
 
 /* =====================================================
-   INITIAL SAVE / UI
+   BEFORE UNLOAD
 ===================================================== */
 
+window.addEventListener(
+  "beforeunload",
+  () => {
+    saveGame();
+  }
+);
+
+/* =====================================================
+   INITIAL SAVE + UI
+===================================================== */
+
+saveGame();
+updateAllUI();
 saveGame();
 updateAllUI();
