@@ -10,7 +10,8 @@ app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 
 // Սա 100%-ով ճիշտ կմիացնի նույն թղթապանակում գտնվող բոլոր JS և CSS ֆայլերը
-app.use(express.static(path.join(__dirname, './')));
+app.use(express.static(__dirname));
+
 
 // Բացում ենք index.html-ը գլխավոր էջում
 app.get("/", (req, res) => {
