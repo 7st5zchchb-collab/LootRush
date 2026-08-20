@@ -1,4 +1,4 @@
-<<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,58 +6,216 @@
 
     <title>LootRush - Login</title>
 
-    <link rel="stylesheet" href="auth.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body>
-    <div class="auth-container">
-      <div class="auth-card" id="authCard">
-        <!-- LOGIN -->
-        <div class="form-box login-box">
-          <h1>Welcome Back</h1>
-          <p>Login to your LootRush account</p>
+  <body class="register-page">
 
-          <input type="text" id="loginUsername" placeholder="Username" />
+    <!-- =========================
+         3D BACKGROUND
+    ========================= -->
 
-          <input type="password" id="loginPassword" placeholder="Password" />
+    <div class="background">
+      <div class="grid"></div>
 
-          <button onclick="login()">LOGIN</button>
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+    </div>
 
-          <span>
-            Don't have an account?
-            <b onclick="showRegister()">Register</b>
-          </span>
+    <!-- =========================
+         LOGIN
+    ========================= -->
+
+    <div class="register-wrapper">
+      <div class="register-card">
+
+        <!-- LOGO -->
+
+        <div class="logo">
+          <h1>Loot<span>Rush</span></h1>
+
+          <p>Welcome back! Login to continue</p>
         </div>
+
+        <!-- LOGIN FORM -->
+
+        <form id="loginForm">
+
+          <!-- EMAIL -->
+
+          <div class="input-group">
+            <label for="loginEmail">
+              Email
+            </label>
+
+            <div class="input-box">
+              <span class="input-icon">📧</span>
+
+              <input
+                type="email"
+                id="loginEmail"
+                placeholder="Enter your email"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- PASSWORD -->
+
+          <div class="input-group">
+            <label for="loginPassword">
+              Password
+            </label>
+
+            <div class="input-box">
+              <span class="input-icon">🔒</span>
+
+              <input
+                type="password"
+                id="loginPassword"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- LOGIN BUTTON -->
+
+          <button
+            type="submit"
+            class="register-button"
+          >
+            🚀 Login
+          </button>
+
+        </form>
 
         <!-- REGISTER -->
-        <div class="form-box register-box">
-          <h1>Create Account</h1>
-          <p>Join LootRush</p>
 
-          <input type="text" id="registerUsername" placeholder="Username" />
+        <div class="login-text">
+          Don't have an account?
 
-          <input type="email" id="registerEmail" placeholder="Email" />
-
-          <input type="password" id="registerPassword" placeholder="Password" />
-
-          <input
-            type="password"
-            id="registerPassword2"
-            placeholder="Confirm Password"
-          />
-
-          <button onclick="register()">REGISTER</button>
-
-          <span>
-            Already have an account?
-            <b onclick="showLogin()">Login</b>
-          </span>
+          <a href="register.html">
+            Register
+          </a>
         </div>
+
       </div>
     </div>
 
+    <!-- MESSAGE -->
+
     <div id="message"></div>
 
-    <script src="auth.js"></script>
+    <!-- =========================
+         LOGIN SCRIPT
+    ========================= -->
+
+    <script>
+      const loginForm = document.getElementById("loginForm");
+      const message = document.getElementById("message");
+
+      function showMessage(text) {
+        message.textContent = text;
+
+        message.classList.add("show");
+
+        setTimeout(function () {
+          message.classList.remove("show");
+        }, 2500);
+      }
+
+      loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const email = document
+          .getElementById("loginEmail")
+          .value
+          .trim();
+
+        const password = document
+          .getElementById("loginPassword")
+          .value;
+
+        /* =========================
+           CHECK ACCOUNT
+        ========================= */
+
+        const savedUser =
+          localStorage.getItem("lootRushUser");
+
+        if (!savedUser) {
+          showMessage(
+            "❌ Account not found! Please register first."
+          );
+
+          return;
+        }
+
+        let user;
+
+        try {
+          user = JSON.parse(savedUser);
+        } catch (error) {
+          showMessage(
+            "❌ Account data is corrupted!"
+          );
+
+          return;
+        }
+
+        /* =========================
+           CHECK EMAIL
+        ========================= */
+
+        if (
+          user.email.toLowerCase() !==
+          email.toLowerCase()
+        ) {
+          showMessage(
+            "❌ Incorrect email or password!"
+          );
+
+          return;
+        }
+
+        /* =========================
+           CHECK PASSWORD
+        ========================= */
+
+        if (user.password !== password) {
+          showMessage(
+            "❌ Incorrect email or password!"
+          );
+
+          return;
+        }
+
+        /* =========================
+           LOGIN SUCCESS
+        ========================= */
+
+        localStorage.setItem(
+          "lootRushLoggedIn",
+          "true"
+        );
+
+        showMessage(
+          "✅ Login successful! Welcome back!"
+        );
+
+        /* =========================
+           GO TO GAME
+        ========================= */
+
+        setTimeout(function () {
+          window.location.href = "index.html";
+        }, 1000);
+      });
+    </script>
+
   </body>
 </html>
