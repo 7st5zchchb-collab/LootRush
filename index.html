@@ -1,38 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="hy">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>LootRush</title>
 
-    <title>LootRush - Play & Win</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
-    <link
-        rel="icon"
-        type="image/png"
-        href="default-avatar.png"
-    >
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <!-- =====================================================
-     AUTH OVERLAY
+     LOGIN / REGISTER
 ===================================================== -->
 
-<div
-    id="authOverlay"
-    class="auth-overlay"
->
+<div id="authOverlay" class="auth-overlay">
 
     <div class="auth-box">
 
@@ -41,46 +24,38 @@
         <div id="loginForm">
 
             <h2>
-                Welcome to
-                <span>LootRush</span>
+                Welcome to <span>LootRush</span>
             </h2>
 
             <p class="auth-subtitle">
-                Sign in to your account to continue
+                Sign in to your account
             </p>
 
             <div class="input-group">
 
-                <label for="loginEmail">
-                    Email Address
-                </label>
+                <label>Email</label>
 
                 <input
                     type="email"
                     id="loginEmail"
-                    placeholder="Enter your email"
-                    autocomplete="email"
+                    placeholder="Enter email"
                 >
 
             </div>
 
             <div class="input-group">
 
-                <label for="loginPassword">
-                    Password
-                </label>
+                <label>Password</label>
 
                 <input
                     type="password"
                     id="loginPassword"
-                    placeholder="Enter your password"
-                    autocomplete="current-password"
+                    placeholder="Enter password"
                 >
 
             </div>
 
             <button
-                type="button"
                 class="auth-btn"
                 onclick="handleLogin()"
             >
@@ -93,10 +68,7 @@
 
                 <a
                     href="#"
-                    onclick="
-                        event.preventDefault();
-                        switchAuthForm('register');
-                    "
+                    onclick="switchAuthForm('register'); return false;"
                 >
                     Register here
                 </a>
@@ -118,56 +90,46 @@
             </h2>
 
             <p class="auth-subtitle">
-                Join LootRush and start winning rewards
+                Join LootRush
             </p>
 
             <div class="input-group">
 
-                <label for="regUsername">
-                    Username
-                </label>
+                <label>Username</label>
 
                 <input
                     type="text"
                     id="regUsername"
-                    placeholder="Enter username"
-                    autocomplete="username"
+                    placeholder="Username"
                 >
 
             </div>
 
             <div class="input-group">
 
-                <label for="regEmail">
-                    Email Address
-                </label>
+                <label>Email</label>
 
                 <input
                     type="email"
                     id="regEmail"
-                    placeholder="Enter email"
-                    autocomplete="email"
+                    placeholder="Email"
                 >
 
             </div>
 
             <div class="input-group">
 
-                <label for="regPassword">
-                    Password
-                </label>
+                <label>Password</label>
 
                 <input
                     type="password"
                     id="regPassword"
-                    placeholder="Password (min. 4 characters)"
-                    autocomplete="new-password"
+                    placeholder="Password"
                 >
 
             </div>
 
             <button
-                type="button"
                 class="auth-btn"
                 onclick="handleRegister()"
             >
@@ -180,12 +142,9 @@
 
                 <a
                     href="#"
-                    onclick="
-                        event.preventDefault();
-                        switchAuthForm('login');
-                    "
+                    onclick="switchAuthForm('login'); return false;"
                 >
-                    Sign in here
+                    Sign in
                 </a>
 
             </p>
@@ -203,63 +162,37 @@
 
 <header>
 
-    <div class="logo">
-
-        <h2>
-            <span>LootRush</span>
-        </h2>
-
-    </div>
-
+    <h2>
+        <span>LootRush</span>
+    </h2>
 
     <nav>
 
-        <button
-            type="button"
-            onclick="showPage('game')"
-        >
+        <button onclick="showPage('game')">
             🎲 Game
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('shop')"
-        >
+        <button onclick="showPage('shop')">
             🛒 Shop
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('inventory')"
-        >
+        <button onclick="showPage('inventory')">
             🎒 Inventory
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('rewards')"
-        >
+        <button onclick="showPage('rewards')">
             🎁 Rewards
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('bomber')"
-        >
+        <button onclick="showPage('bomber')">
             💣 Bomber
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('crash')"
-        >
+        <button onclick="showPage('crash')">
             📈 Multiplier
         </button>
 
-        <button
-            type="button"
-            onclick="showPage('wallet')"
-        >
+        <button onclick="showPage('wallet')">
             💳 Wallet
         </button>
 
@@ -291,7 +224,6 @@
         <div class="player-menu">
 
             <button
-                type="button"
                 class="player-avatar"
                 onclick="togglePlayerMenu()"
             >
@@ -303,7 +235,6 @@
                 >
 
             </button>
-
 
             <div
                 id="profileDropdown"
@@ -318,8 +249,6 @@
                 </div>
 
                 <button
-                    type="button"
-                    class="profile-option"
                     onclick="logout()"
                 >
                     🚪 Log Out
@@ -341,15 +270,11 @@
 <div id="message"></div>
 
 
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
 <main>
 
 
 <!-- =====================================================
-     1. GAME
+     GAME
 ===================================================== -->
 
 <section
@@ -357,27 +282,20 @@
     class="page"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
-            🎲 LootRush Game
+            🎲 LootRush
         </h1>
 
         <p>
             Roll the loot and win rewards!
         </p>
 
-    </div>
 
+        <div class="loot-box">
 
-    <div class="game-container">
-
-        <div class="loot-card">
-
-            <div
-                id="rarity"
-                class="rarity"
-            >
+            <div id="rarity">
                 READY
             </div>
 
@@ -393,75 +311,39 @@
             </h2>
 
             <p id="lootDescription">
-                Roll to discover your reward.
+                Click Roll to discover your reward.
             </p>
 
-            <div
-                id="reward"
-                class="reward"
-            >
-                ?
-            </div>
-
-            <button
-                type="button"
-                class="roll-button"
-                onclick="rollLoot()"
-            >
-                🎲 ROLL LOOT
-            </button>
+            <strong id="reward">
+                -
+            </strong>
 
         </div>
 
 
-        <div class="stats-container">
+        <button
+            class="main-button"
+            onclick="rollLoot()"
+        >
+            🎲 ROLL — 150 💵
+        </button>
 
-            <div class="stat-card">
 
-                <span>
-                    🎲 Total Rolls
-                </span>
+        <div class="stats">
 
-                <strong id="rolls">
-                    0
-                </strong>
-
+            <div>
+                <span>Rolls</span>
+                <strong id="rolls">0</strong>
             </div>
 
-            <div class="stat-card">
-
-                <span>
-                    🔥 Best Streak
-                </span>
-
-                <strong id="streak">
-                    0
-                </strong>
-
+            <div>
+                <span>Best Streak</span>
+                <strong id="streak">0</strong>
             </div>
 
-            <div class="stat-card">
-
-                <span>
-                    💎 Rare Items
-                </span>
-
-                <strong id="rareItems">
-                    0
-                </strong>
-
-            </div>
-
-            <div class="stat-card">
-
-                <span>
-                    🎨 Current Skin
-                </span>
-
-                <strong id="currentSkin">
-                    Default
-                </strong>
-
+            <div>
+                <span>Rare Items</span>
+                <strong id="rareItems">0</strong>
             </div>
 
         </div>
@@ -472,7 +354,7 @@
 
 
 <!-- =====================================================
-     2. SHOP
+     SHOP
 ===================================================== -->
 
 <section
@@ -480,42 +362,38 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
-            🛒 LootRush Shop
+            🛒 Shop
         </h1>
 
         <p>
-            Buy skins and diamonds.
+            Buy skins and Diamonds
         </p>
 
-    </div>
-
-
-    <div class="shop-section">
 
         <h2>
-            🪙 Coin Shop
+            💵 Coin Shop
         </h2>
 
         <div
             id="coinShopItems"
-            class="items-grid"
+            class="shop-grid"
         ></div>
 
-    </div>
-
-
-    <div class="shop-section">
 
         <h2>
             💎 Diamond Shop
         </h2>
 
+        <p>
+            Secure payment with Stripe
+        </p>
+
         <div
             id="diamondShopItems"
-            class="items-grid"
+            class="shop-grid"
         ></div>
 
     </div>
@@ -524,7 +402,7 @@
 
 
 <!-- =====================================================
-     3. INVENTORY
+     INVENTORY
 ===================================================== -->
 
 <section
@@ -532,29 +410,24 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
             🎒 Inventory
         </h1>
 
-        <p>
-            Your collected items.
-        </p>
+        <div
+            id="inventoryItems"
+            class="shop-grid"
+        ></div>
 
     </div>
-
-
-    <div
-        id="inventoryItems"
-        class="items-grid"
-    ></div>
 
 </section>
 
 
 <!-- =====================================================
-     4. REWARDS
+     REWARDS
 ===================================================== -->
 
 <section
@@ -562,49 +435,28 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
             🎁 Daily Rewards
         </h1>
 
-        <p>
-            Come back every day for rewards!
+        <p id="rewardTimer">
+            Loading...
         </p>
 
-    </div>
-
-
-    <div class="reward-container">
-
-        <div class="daily-reward-card">
-
-            <div class="reward-icon">
-                🎁
-            </div>
+        <div class="reward-box">
 
             <h2>
-                Daily Reward
+                Claim your daily reward
             </h2>
 
-            <p>
-                Claim your daily bonus.
-            </p>
-
             <button
-                type="button"
-                class="reward-button"
+                class="main-button"
                 onclick="claimDailyReward()"
             >
                 🎁 CLAIM REWARD
             </button>
-
-            <div
-                id="rewardTimer"
-                class="reward-timer"
-            >
-                Next reward in...
-            </div>
 
         </div>
 
@@ -614,7 +466,7 @@
 
 
 <!-- =====================================================
-     5. BOMBER
+     BOMBER
 ===================================================== -->
 
 <section
@@ -622,23 +474,18 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
             💣 Bomber
         </h1>
 
         <p>
-            Find diamonds. Avoid bombs!
+            Find Diamonds without hitting a bomb.
         </p>
 
-    </div>
-
-
-    <div class="bomber-controls">
-
-        <label for="bomberBombSelector">
-            💣 Bombs
+        <label>
+            Bombs:
         </label>
 
         <select
@@ -658,65 +505,34 @@
                 5 Bombs
             </option>
 
-            <option value="7">
-                7 Bombs
-            </option>
-
-            <option value="10">
-                10 Bombs
+            <option value="8">
+                8 Bombs
             </option>
 
         </select>
 
-        <button
-            id="bomberStartButton"
-            type="button"
-            onclick="startBomberGame()"
-        >
-            💣 START
-        </button>
 
-        <button
-            id="bomberCashoutButton"
-            type="button"
-            disabled
-            onclick="cashOutBomber()"
-        >
-            💰 CASH OUT
-        </button>
+        <div class="bomber-info">
 
-    </div>
+            <span>
+                💣 Bombs:
+                <strong id="bombCount">3</strong>
+            </span>
 
+            <span>
+                💎 Safe:
+                <strong id="safeCount">0</strong>
+            </span>
 
-    <div class="bomber-info">
+            <span>
+                📈
+                <strong id="bomberMultiplier">
+                    1.00x
+                </strong>
+            </span>
 
-        <div>
-            💣 Bombs:
-            <strong id="bombCount">
-                3
-            </strong>
         </div>
 
-        <div>
-            💎 Safe:
-            <strong id="safeCount">
-                0
-            </strong>
-        </div>
-
-        <div>
-            📈 Multiplier:
-            <strong id="bomberMultiplier">
-                1.00x
-            </strong>
-        </div>
-
-        <div>
-            🏆 Win:
-            <strong id="bomberWin">
-                1 💎
-            </strong>
-        </div>
 
         <div
             id="bomberStatus"
@@ -725,19 +541,38 @@
             READY
         </div>
 
+
+        <div
+            id="bomberBoard"
+            class="bomber-board"
+        ></div>
+
+
+        <button
+            id="bomberStartButton"
+            class="main-button"
+            onclick="startBomberGame()"
+        >
+            💎 START — 1 💎
+        </button>
+
+
+        <button
+            id="bomberCashoutButton"
+            class="main-button"
+            onclick="cashOutBomber()"
+            disabled
+        >
+            💰 CASH OUT
+        </button>
+
     </div>
-
-
-    <div
-        id="bomberBoard"
-        class="bomber-board"
-    ></div>
 
 </section>
 
 
 <!-- =====================================================
-     6. CRASH / MULTIPLIER
+     CRASH / MULTIPLIER
 ===================================================== -->
 
 <section
@@ -745,21 +580,11 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
             📈 Multiplier
         </h1>
-
-        <p>
-            Cash out before the crash!
-        </p>
-
-    </div>
-
-
-    <div class="crash-container">
-
 
         <div
             id="crashStatus"
@@ -777,16 +602,10 @@
         </div>
 
 
-        <div
-            id="crashGraph"
-            class="crash-graph"
-        ></div>
+        <div class="input-group">
 
-
-        <div class="crash-controls">
-
-            <label for="crashBet">
-                💎 Bet
+            <label>
+                Bet in Diamonds
             </label>
 
             <input
@@ -794,108 +613,60 @@
                 id="crashBet"
                 value="5"
                 min="1"
-                step="1"
             >
-
-            <button
-                id="crashStartButton"
-                type="button"
-                onclick="startCrashGame()"
-            >
-                🚀 START
-            </button>
-
-            <button
-                id="crashCashoutButton"
-                type="button"
-                disabled
-                onclick="cashOutCrash()"
-            >
-                💰 CASH OUT
-            </button>
 
         </div>
 
 
-        <div class="crash-stats">
+        <div class="crash-info">
 
             <div>
-                <span>
-                    🎮 Step
-                </span>
-
+                Step:
                 <strong id="crashStep">
                     0 / 10
                 </strong>
             </div>
 
-
             <div>
-                <span>
-                    💎 Current Bet
-                </span>
-
+                Bet:
                 <strong id="crashCurrentBet">
                     5.00 💎
                 </strong>
             </div>
 
-
             <div>
-                <span>
-                    🏆 Potential Win
-                </span>
-
+                Win:
                 <strong id="crashPotentialWin">
                     5.00 💎
                 </strong>
             </div>
 
-
-            <div>
-                <span>
-                    🏆 Wins
-                </span>
-
-                <strong id="crashWins">
-                    0
-                </strong>
-            </div>
-
-
-            <div>
-                <span>
-                    💥 Losses
-                </span>
-
-                <strong id="crashLosses">
-                    0
-                </strong>
-            </div>
-
-
-            <div>
-                <span>
-                    📈 Best
-                </span>
-
-                <strong id="crashBest">
-                    0.00x
-                </strong>
-            </div>
-
-
-            <div>
-                <span>
-                    🎮 Games
-                </span>
-
-                <strong id="crashTotalGames">
-                    0
-                </strong>
-            </div>
-
         </div>
+
+
+        <div
+            id="crashGraph"
+            class="crash-graph"
+        ></div>
+
+
+        <button
+            id="crashStartButton"
+            class="main-button"
+            onclick="startCrashGame()"
+        >
+            🚀 START
+        </button>
+
+
+        <button
+            id="crashCashoutButton"
+            class="main-button"
+            onclick="cashOutCrash()"
+            disabled
+        >
+            💰 CASH OUT
+        </button>
 
 
         <div
@@ -909,7 +680,7 @@
 
 
 <!-- =====================================================
-     7. WALLET
+     WALLET
 ===================================================== -->
 
 <section
@@ -917,393 +688,134 @@
     class="page hidden"
 >
 
-    <div class="page-header">
+    <div class="page-card">
 
         <h1>
             💳 Wallet
         </h1>
 
-        <p>
-            Manage your diamonds and payments.
-        </p>
 
-    </div>
+        <div class="wallet-balance">
 
-
-    <!-- WALLET BALANCE -->
-
-    <div class="wallet-balance-grid">
-
-        <div class="wallet-card">
-
-            <div class="wallet-card-icon">
-                ⭐
+            <div>
+                ⭐ Points
+                <strong id="walletPoints">
+                    0
+                </strong>
             </div>
 
-            <span>
-                Points
-            </span>
-
-            <strong id="walletPoints">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="wallet-card">
-
-            <div class="wallet-card-icon">
-                💎
+            <div>
+                💎 Diamonds
+                <strong id="walletDiamonds">
+                    0
+                </strong>
             </div>
 
-            <span>
-                Diamonds
-            </span>
-
-            <strong id="walletDiamonds">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="wallet-card">
-
-            <div class="wallet-card-icon">
-                💵
-            </div>
-
-            <span>
-                Wallet Value
-            </span>
-
-            <strong>
-                $<span id="walletDollarValue">0.00</span>
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <!-- =================================================
-         STRIPE BUY DIAMONDS
-    ================================================== -->
-
-    <div class="wallet-section">
-
-        <div class="wallet-section-header">
-
-            <h2>
-                💎 Buy Diamonds
-            </h2>
-
-            <p>
-                Secure payment powered by Stripe
-            </p>
-
-        </div>
-
-
-        <div class="stripe-notice">
-
-            🔒
-            <span>
-                You will be redirected to Stripe Checkout.
-                Your card information is not stored by LootRush.
-            </span>
-
-        </div>
-
-
-        <div class="wallet-stripe-grid">
-
-
-            <!-- 50 -->
-
-            <div class="stripe-product-card">
-
-                <div class="stripe-product-icon">
-                    💎
-                </div>
-
-                <h3>
-                    50 Diamonds
-                </h3>
-
-                <div class="stripe-old-price">
-                    $50.00
-                </div>
-
-                <div class="stripe-price">
-                    $39.99
-                </div>
-
-                <button
-                    type="button"
-                    class="stripe-buy-button"
-                    onclick="buyWithStripe(diamondShop[0])"
-                >
-                    💳 BUY WITH STRIPE
-                </button>
-
-            </div>
-
-
-            <!-- 100 -->
-
-            <div class="stripe-product-card">
-
-                <div class="stripe-product-icon">
-                    💎
-                </div>
-
-                <h3>
-                    100 Diamonds
-                </h3>
-
-                <div class="stripe-old-price">
-                    $100.00
-                </div>
-
-                <div class="stripe-price">
-                    $69.99
-                </div>
-
-                <button
-                    type="button"
-                    class="stripe-buy-button"
-                    onclick="buyWithStripe(diamondShop[1])"
-                >
-                    💳 BUY WITH STRIPE
-                </button>
-
-            </div>
-
-
-            <!-- 250 -->
-
-            <div class="stripe-product-card">
-
-                <div class="stripe-product-icon">
-                    💎
-                </div>
-
-                <h3>
-                    250 Diamonds
-                </h3>
-
-                <div class="stripe-old-price">
-                    $250.00
-                </div>
-
-                <div class="stripe-price">
-                    $149.99
-                </div>
-
-                <button
-                    type="button"
-                    class="stripe-buy-button"
-                    onclick="buyWithStripe(diamondShop[2])"
-                >
-                    💳 BUY WITH STRIPE
-                </button>
-
-            </div>
-
-
-            <!-- 500 -->
-
-            <div class="stripe-product-card">
-
-                <div class="stripe-product-icon">
-                    💎
-                </div>
-
-                <h3>
-                    500 Diamonds
-                </h3>
-
-                <div class="stripe-old-price">
-                    $500.00
-                </div>
-
-                <div class="stripe-price">
-                    $249.99
-                </div>
-
-                <button
-                    type="button"
-                    class="stripe-buy-button"
-                    onclick="buyWithStripe(diamondShop[3])"
-                >
-                    💳 BUY WITH STRIPE
-                </button>
-
-            </div>
-
-
-            <!-- 1000 -->
-
-            <div class="stripe-product-card">
-
-                <div class="stripe-product-icon">
-                    💎
-                </div>
-
-                <h3>
-                    1000 Diamonds
-                </h3>
-
-                <div class="stripe-old-price">
-                    $1000.00
-                </div>
-
-                <div class="stripe-price">
-                    $399.99
-                </div>
-
-                <button
-                    type="button"
-                    class="stripe-buy-button"
-                    onclick="buyWithStripe(diamondShop[4])"
-                >
-                    💳 BUY WITH STRIPE
-                </button>
-
+            <div>
+                💵 Value
+                <strong>
+                    $<span id="walletDollarValue">
+                        0.00
+                    </span>
+                </strong>
             </div>
 
         </div>
 
-    </div>
-
-
-    <!-- =================================================
-         POINTS CONVERSION
-    ================================================== -->
-
-    <div class="wallet-section">
 
         <h2>
             ⭐ Convert Points
         </h2>
 
         <p>
-            1000 ⭐ points = 1 💎 diamond
+            1000 points = 1 Diamond
         </p>
 
         <button
-            type="button"
-            class="wallet-action-button"
+            class="main-button"
             onclick="convertPointsToDiamonds()"
         >
-            ⭐ CONVERT 1000 POINTS
+            ⭐ CONVERT
         </button>
 
-    </div>
 
+        <hr>
 
-    <!-- =================================================
-         WITHDRAWAL
-    ================================================== -->
-
-    <div class="wallet-section">
 
         <h2>
-            💰 Withdrawal
+            📤 Withdrawal
         </h2>
 
-        <p class="wallet-warning">
-
-            ⚠️ Withdrawal requests require a server-side
-            payout system. Do not enter card details here
-            unless you have implemented a secure payment
-            provider/backend.
-
+        <p>
+            Enter your information to request a withdrawal.
         </p>
 
 
-        <div class="withdraw-form">
+        <div class="input-group">
 
-            <div class="input-group">
+            <label>
+                Amount of Diamonds
+            </label>
 
-                <label for="withdrawDiamonds">
-                    💎 Diamonds
-                </label>
-
-                <input
-                    type="number"
-                    id="withdrawDiamonds"
-                    min="1"
-                    value="1"
-                    oninput="updateWithdrawValue()"
-                >
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="withdrawName">
-                    👤 Name
-                </label>
-
-                <input
-                    type="text"
-                    id="withdrawName"
-                    placeholder="Your name"
-                >
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="withdrawCard">
-                    💳 Payout Account / Card Reference
-                </label>
-
-                <input
-                    type="text"
-                    id="withdrawCard"
-                    placeholder="Use secure payout provider"
-                >
-
-            </div>
-
-
-            <div class="withdraw-value">
-
-                Estimated value:
-
-                <strong>
-                    $<span id="withdrawDollarValue">
-                        1.00
-                    </span>
-                </strong>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="withdraw-button"
-                onclick="createWithdrawalRequest()"
+            <input
+                type="number"
+                id="withdrawDiamonds"
+                min="1"
+                oninput="updateWithdrawValue()"
             >
-                📤 REQUEST WITHDRAWAL
-            </button>
 
         </div>
 
-    </div>
+
+        <p>
+            Estimated value:
+            <strong>
+                $<span id="withdrawDollarValue">
+                    0.00
+                </span>
+            </strong>
+        </p>
 
 
-    <!-- =================================================
-         WITHDRAWAL HISTORY
-    ================================================== -->
+        <div class="input-group">
 
-    <div class="wallet-section">
+            <label>
+                Name
+            </label>
+
+            <input
+                type="text"
+                id="withdrawName"
+                placeholder="Full name"
+            >
+
+        </div>
+
+
+        <div class="input-group">
+
+            <label>
+                Card Number
+            </label>
+
+            <input
+                type="text"
+                id="withdrawCard"
+                maxlength="19"
+                placeholder="0000 0000 0000 0000"
+                oninput="formatCardNumber(this)"
+            >
+
+        </div>
+
+
+        <button
+            class="main-button"
+            onclick="createWithdrawalRequest()"
+        >
+            📤 REQUEST WITHDRAWAL
+        </button>
+
 
         <h2>
             📋 Withdrawal History
@@ -1311,7 +823,6 @@
 
         <div
             id="withdrawalHistory"
-            class="withdrawal-history"
         ></div>
 
     </div>
@@ -1322,80 +833,7 @@
 </main>
 
 
-<!-- =====================================================
-     GAME.JS
-===================================================== -->
-
 <script src="game.js"></script>
-
-
-<!-- =====================================================
-     AUTH ENTER KEY
-===================================================== -->
-
-<script>
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (event.key !== "Enter") {
-            return;
-        }
-
-        const activeElement =
-            document.activeElement;
-
-        if (!activeElement) {
-            return;
-        }
-
-        if (
-            activeElement.id === "loginEmail" ||
-            activeElement.id === "loginPassword"
-        ) {
-
-            event.preventDefault();
-
-            handleLogin();
-
-        }
-
-        if (
-            activeElement.id === "regUsername" ||
-            activeElement.id === "regEmail" ||
-            activeElement.id === "regPassword"
-        ) {
-
-            event.preventDefault();
-
-            handleRegister();
-
-        }
-
-    }
-);
-
-</script>
-
-
-<!-- =====================================================
-     DEFAULT PAGE
-===================================================== -->
-
-<script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        showPage("game");
-
-    }
-);
-
-</script>
-
 
 </body>
 </html>
