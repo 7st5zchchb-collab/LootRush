@@ -1,16 +1,14 @@
 {
   "name": "lootrush-stripe-server",
-  "version": "1.0.0",
-  "description": "LootRush Stripe payment server",
+  "version": "2.0.0",
+  "description": "LootRush secure Stripe + PostgreSQL server",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
+  "scripts": { "start": "node server.js", "dev": "node server.js" },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "pg": "^8.16.3",
     "stripe": "^17.5.0"
   }
 }
