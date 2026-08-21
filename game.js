@@ -574,11 +574,6 @@ function updateSkin() {
   }
 
 
-  /*
-     Don't destroy all body classes.
-     Remove only LootRush skin classes.
-  */
-
   document.body.classList.remove(
     "skin-shadow",
     "skin-fire",
@@ -1478,11 +1473,6 @@ function renderShop(
 
 async function buySkin(item) {
 
-
-  /* =========================
-     COINS
-  ========================= */
-
   if (
     item.type === "coins"
   ) {
@@ -1539,10 +1529,6 @@ async function buySkin(item) {
   }
 
 
-  /* =========================
-     DIAMONDS
-  ========================= */
-
   if (
     item.type === "diamonds"
   ) {
@@ -1590,10 +1576,6 @@ async function buySkin(item) {
     return;
   }
 
-
-  /* =========================
-     STRIPE
-  ========================= */
 
   if (
     item.type === "dollars" ||
@@ -1659,18 +1641,52 @@ function checkAuth() {
     );
 
 
+  /*
+     Եթե հին auth.js-ից մնացել է
+     lootRushLoggedIn=true, այն նույնպես
+     ընդունում ենք, որպեսզի նախկին
+     login-ը չկոտրվի։
+  */
+
+  const oldLoggedIn =
+    localStorage.getItem(
+      "lootRushLoggedIn"
+    );
+
+
   if (
-    loggedIn === "true"
+    loggedIn === "true" ||
+    oldLoggedIn === "true"
   ) {
+
+    localStorage.setItem(
+      "loggedIn",
+      "true"
+    );
+
+    localStorage.setItem(
+      "lootRushLoggedIn",
+      "true"
+    );
 
     overlay.classList.add(
       "hidden"
     );
 
+    overlay.style.display =
+      "none";
+
   } else {
 
     overlay.classList.remove(
       "hidden"
+    );
+
+    overlay.style.display =
+      "";
+
+    switchAuthForm(
+      "login"
     );
 
   }
@@ -1830,7 +1846,9 @@ function handleRegister() {
   }
 
 
-  /* SAVE ACCOUNT */
+  /*
+     SAVE ACCOUNT
+  */
 
   localStorage.setItem(
     "registeredUsername",
@@ -1848,6 +1866,28 @@ function handleRegister() {
   );
 
 
+  /*
+     Հին auth համակարգի տվյալները
+     նույնպես պահում ենք, որպեսզի
+     նախկին տարբերակից մնացած տվյալների
+     հետ խնդիր չլինի։
+  */
+
+  const compatibleUser = {
+    username: username,
+    email: email,
+    password: password
+  };
+
+
+  localStorage.setItem(
+    "lootRushUser",
+    JSON.stringify(
+      compatibleUser
+    )
+  );
+
+
   playerName =
     username;
 
@@ -1859,13 +1899,17 @@ function handleRegister() {
 
 
   /*
-     IMPORTANT:
-     Registration does NOT automatically
+     Registration DOES NOT automatically
      log the user in.
   */
 
   localStorage.setItem(
     "loggedIn",
+    "false"
+  );
+
+  localStorage.setItem(
+    "lootRushLoggedIn",
     "false"
   );
 
@@ -1908,6 +1952,9 @@ function handleRegister() {
 
       if (loginPassword) {
 
+        loginPassword.value =
+          "";
+
         loginPassword.focus();
 
       }
@@ -1921,103 +1968,206 @@ function handleRegister() {
 
 /* =====================================================
    LOGIN
+   FIXED
 ===================================================== */
 
 function handleLogin() {
-  const emailElement = document.getElementById("loginEmail");
-  const passwordElement = document.getElementById("loginPassword");
 
-  if (!emailElement || !passwordElement) {
-    showMessage("❌ Login form not found.");
+  const emailElement =
+    document.getElementById(
+      "loginEmail"
+    );
+
+  const passwordElement =
+    document.getElementById(
+      "loginPassword"
+    );
+
+
+  if (
+    !emailElement ||
+    !passwordElement
+  ) {
+
+    showMessage(
+      "❌ Login form not found."
+    );
+
     return;
   }
 
-  const email = emailElement.value.trim();
-  const password = passwordElement.value;
 
-  if (!email || !password) {
-    showMessage("❌ Enter email and password.");
+  const email =
+    emailElement.value.trim();
+
+  const password =
+    passwordElement.value;
+
+
+  if (
+    !email ||
+    !password
+  ) {
+
+    showMessage(
+      "❌ Enter email and password."
+    );
+
     return;
   }
+
 
   const savedEmail =
-    localStorage.getItem("registeredEmail");
+    localStorage.getItem(
+      "registeredEmail"
+    );
 
   const savedPassword =
-    localStorage.getItem("registeredPassword");
+    localStorage.getItem(
+      "registeredPassword"
+    );
 
   const savedUsername =
-    localStorage.getItem("registeredUsername");
+    localStorage.getItem(
+      "registeredUsername"
+    );
 
-  if (!savedEmail || !savedPassword) {
+
+  /*
+     FALLBACK FOR OLD ACCOUNT FORMAT
+  */
+
+  let oldUser = null;
+
+  try {
+
+    const oldUserData =
+      localStorage.getItem(
+        "lootRushUser"
+      );
+
+    if (oldUserData) {
+
+      oldUser =
+        JSON.parse(
+          oldUserData
+        );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Old account parse error:",
+      error
+    );
+
+  }
+
+
+  const finalEmail =
+    savedEmail ||
+    (
+      oldUser
+        ? oldUser.email
+        : null
+    );
+
+  const finalPassword =
+    savedPassword ||
+    (
+      oldUser
+        ? oldUser.password
+        : null
+    );
+
+  const finalUsername =
+    savedUsername ||
+    (
+      oldUser
+        ? oldUser.username
+        : "Guest"
+    );
+
+
+  /*
+     NO ACCOUNT
+  */
+
+  if (
+    !finalEmail ||
+    !finalPassword
+  ) {
+
     showMessage(
       "❌ No account found. Please register first."
     );
+
     return;
   }
+
+
+  /*
+     EMAIL CHECK
+  */
 
   if (
     email.toLowerCase() !==
-    savedEmail.toLowerCase()
+    String(finalEmail).toLowerCase()
   ) {
-    showMessage("❌ Wrong email or password.");
+
+    showMessage(
+      "❌ Wrong email or password."
+    );
+
     return;
   }
 
-  if (password !== savedPassword) {
-    showMessage("❌ Wrong email or password.");
+
+  /*
+     PASSWORD CHECK
+  */
+
+  if (
+    password !==
+    finalPassword
+  ) {
+
+    showMessage(
+      "❌ Wrong email or password."
+    );
+
     return;
   }
 
-  // ================================
-  // LOGIN SUCCESS
-  // ================================
 
-  localStorage.setItem("loggedIn", "true");
-
-  // Հին auth համակարգի հետ կոնֆլիկտը կանխելու համար
-  localStorage.setItem("lootRushLoggedIn", "true");
-
-  playerName = savedUsername || "Guest";
-
-  localStorage.setItem(
-    "playerName",
-    playerName
-  );
-
-  updateProfile();
-
-  const overlay =
-    document.getElementById("authOverlay");
-
-  if (overlay) {
-    overlay.classList.add("hidden");
-
-    // Եթե CSS-ը .hidden-ը ճիշտ չի աշխատեցնում
-    overlay.style.display = "none";
-  }
-
-  passwordElement.value = "";
-
-  updateAllUI();
-  saveGame();
-
-  showMessage(
-    `✅ Welcome ${playerName}!`
-  );
-}
+  /* =================================================
+     LOGIN SUCCESS
+  ================================================= */
 
 
-  /* LOGIN SUCCESS */
+  /*
+     BOTH AUTH FLAGS ARE SET
+     This prevents conflict with old auth.js
+  */
 
   localStorage.setItem(
     "loggedIn",
     "true"
   );
 
+  localStorage.setItem(
+    "lootRushLoggedIn",
+    "true"
+  );
+
+
+  /*
+     SAVE USER
+  */
 
   playerName =
-    savedUsername ||
+    finalUsername ||
     "Guest";
 
 
@@ -2027,8 +2177,36 @@ function handleLogin() {
   );
 
 
+  /*
+     KEEP OLD ACCOUNT FORMAT
+  */
+
+  localStorage.setItem(
+    "registeredUsername",
+    finalUsername
+  );
+
+  localStorage.setItem(
+    "registeredEmail",
+    finalEmail
+  );
+
+  localStorage.setItem(
+    "registeredPassword",
+    finalPassword
+  );
+
+
+  /*
+     UPDATE PROFILE
+  */
+
   updateProfile();
 
+
+  /*
+     CLOSE AUTH OVERLAY
+  */
 
   const overlay =
     document.getElementById(
@@ -2042,12 +2220,50 @@ function handleLogin() {
       "hidden"
     );
 
+    /*
+       Force hide.
+       Սա կարևոր է, եթե CSS-ի
+       .hidden-ը ճիշտ չի աշխատում։
+    */
+
+    overlay.style.display =
+      "none";
+
   }
 
+
+  /*
+     MAKE SURE MAIN PAGE IS VISIBLE
+  */
+
+  const pages =
+    document.querySelectorAll(
+      ".page"
+    );
+
+
+  pages.forEach(
+    function (page) {
+
+      page.classList.remove(
+        "auth-hidden"
+      );
+
+    }
+  );
+
+
+  /*
+     CLEAR PASSWORD
+  */
 
   passwordElement.value =
     "";
 
+
+  /*
+     UPDATE EVERYTHING
+  */
 
   updateAllUI();
 
@@ -2072,6 +2288,11 @@ function logout() {
     "false"
   );
 
+  localStorage.setItem(
+    "lootRushLoggedIn",
+    "false"
+  );
+
 
   const overlay =
     document.getElementById(
@@ -2085,12 +2306,39 @@ function logout() {
       "hidden"
     );
 
+    overlay.style.display =
+      "";
+
   }
 
 
   switchAuthForm(
     "login"
   );
+
+
+  /*
+     Clear login fields
+  */
+
+  const email =
+    document.getElementById(
+      "loginEmail"
+    );
+
+  const password =
+    document.getElementById(
+      "loginPassword"
+    );
+
+
+  if (email) {
+    email.value = "";
+  }
+
+  if (password) {
+    password.value = "";
+  }
 
 
   showMessage(
@@ -2472,6 +2720,7 @@ function changeBomberBombs() {
 
 
     return;
+
   }
 
 
@@ -2604,6 +2853,7 @@ function startBomberGame() {
     );
 
     return;
+
   }
 
 
