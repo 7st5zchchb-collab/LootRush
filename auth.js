@@ -63,30 +63,20 @@ function handleRegister() {
     showMessage("❌ Fill in all fields!");
     return;
   }
-
   if (username.length < 3) {
     showMessage("❌ Username must be at least 3 characters!");
     return;
   }
-
   if (!email.includes("@")) {
     showMessage("❌ Enter a valid email!");
     return;
   }
-
   if (password.length < 4) {
     showMessage("❌ Password must be at least 4 characters!");
     return;
   }
 
-  const user = {
-    username,
-    email,
-    password,
-    coins: 150,
-    diamonds: 0,
-    points: 0
-  };
+  const user = { username, email, password, coins: 150, diamonds: 0, points: 0 };
 
   localStorage.setItem("lootRushUser", JSON.stringify(user));
   localStorage.setItem("registeredUsername", username);
@@ -113,7 +103,6 @@ function handleLogin() {
   const password = document.getElementById("loginPassword")?.value;
   let user = getUser();
 
-  // Recover an account created by the previous game.js version.
   if (!user) {
     const oldEmail = localStorage.getItem("registeredEmail");
     const oldPassword = localStorage.getItem("registeredPassword");
@@ -136,16 +125,11 @@ function handleLogin() {
     showMessage("❌ Enter email and password!");
     return;
   }
-
   if (!user) {
     showMessage("❌ Account not found! Register first.");
     return;
   }
-
-  if (
-    email.toLowerCase() !== String(user.email).toLowerCase() ||
-    password !== user.password
-  ) {
+  if (email.toLowerCase() !== String(user.email).toLowerCase() || password !== user.password) {
     showMessage("❌ Wrong email or password!");
     return;
   }
@@ -153,16 +137,9 @@ function handleLogin() {
   localStorage.setItem("lootRushLoggedIn", "true");
   localStorage.setItem("loggedIn", "true");
   localStorage.setItem("playerName", user.username || "Guest");
-
-  if (Number.isFinite(Number(user.coins))) {
-    localStorage.setItem("coins", String(user.coins));
-  }
-  if (Number.isFinite(Number(user.diamonds))) {
-    localStorage.setItem("diamonds", String(user.diamonds));
-  }
-  if (Number.isFinite(Number(user.points))) {
-    localStorage.setItem("points", String(user.points));
-  }
+  localStorage.setItem("coins", String(Number(user.coins) || 150));
+  localStorage.setItem("diamonds", String(Number(user.diamonds) || 0));
+  localStorage.setItem("points", String(Number(user.points) || 0));
 
   const overlay = document.getElementById("authOverlay");
   if (overlay) overlay.classList.add("hidden");
@@ -172,72 +149,60 @@ function handleLogin() {
 
   if (typeof updateAllUI === "function") updateAllUI();
   if (typeof saveGame === "function") saveGame();
-
   showMessage(`✅ Welcome ${user.username || "Guest"}!`);
+}
+
+function syncUserFromGame() {
+  const user = getUser();
+  if (!user) return;
+
+  const c = Number(localStorage.getItem("coins"));
+  const d = Number(localStorage.getItem("diamonds"));
+  const p = Number(localStorage.getItem("points"));
+
+  if (Number.isFinite(c)) user.coins = c;
+  if (Number.isFinite(d)) user.diamonds = d;
+  if (Number.isFinite(p)) user.points = p;
+  user.username = localStorage.getItem("playerName") || user.username;
+
+  localStorage.setItem("lootRushUser", JSON.stringify(user));
 }
 
 function logout() {
   syncUserFromGame();
-
   localStorage.setItem("lootRushLoggedIn", "false");
   localStorage.setItem("loggedIn", "false");
 
   const overlay = document.getElementById("authOverlay");
   if (overlay) overlay.classList.remove("hidden");
-
   switchAuthForm("login");
 
   const passwordInput = document.getElementById("loginPassword");
   if (passwordInput) passwordInput.value = "";
 }
 
-// =====================================================
-// KEEP ACCOUNT DATA IN SYNC WITH game.js
-// =====================================================
-
-function syncUserFromGame() {
-  const user = getUser();
-  if (!user) return;
-
-  const coinsValue = Number(localStorage.getItem("coins"));
-  const diamondsValue = Number(localStorage.getItem("diamonds"));
-  const pointsValue = Number(localStorage.getItem("points"));
-
-  if (Number.isFinite(coinsValue)) user.coins = coinsValue;
-  if (Number.isFinite(diamondsValue)) user.diamonds = diamondsValue;
-  if (Number.isFinite(pointsValue)) user.points = pointsValue;
-
-  user.username = localStorage.getItem("playerName") || user.username;
-  localStorage.setItem("lootRushUser", JSON.stringify(user));
-}
-
-// game.js defines saveGame before auth.js loads. Wrap it so every
-// later game save also updates the logged-in user's account snapshot.
-if (typeof window.saveGame === "function" && !window.__lootRushSaveWrapped) {
-  const originalSaveGame = window.saveGame;
-
-  window.saveGame = function () {
-    originalSaveGame();
-    syncUserFromGame();
-  };
-
-  window.__lootRushSaveWrapped = true;
-}
-
-// Backward-compatible aliases.
 function register() { handleRegister(); }
 function login() { handleLogin(); }
 function showRegister() { switchAuthForm("register"); }
 function showLogin() { switchAuthForm("login"); }
 
+// Load post-game fixes after game.js has finished defining its functions.
+(function loadGameFixes() {
+  if (window.__lootRushGameFixesLoaded) return;
+  window.__lootRushGameFixesLoaded = true;
+  const script = document.createElement("script");
+  script.src = "game-fixes.js?v=3";
+  script.defer = false;
+  script.onload = () => {
+    if (typeof updateAllUI === "function") updateAllUI();
+  };
+  document.head.appendChild(script);
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   checkAuth();
-
   const user = getUser();
-  if (user?.username) {
-    localStorage.setItem("playerName", user.username);
-  }
-
+  if (user?.username) localStorage.setItem("playerName", user.username);
   syncUserFromGame();
 });
 
