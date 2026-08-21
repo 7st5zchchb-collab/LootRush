@@ -1,17 +1,15 @@
 // =====================================================
 // LOOTRUSH GAME FIXES
-// Loaded after game.js through auth.js.
 // =====================================================
 
 (function () {
   "use strict";
 
-  // Fix Bomber: the old startBomberGame() placed bombs and then
-  // called createBomberBoard(), which reset bomberBoard and erased them.
+  // BOMBER: start a fresh round every time Start is pressed.
   window.startBomberGame = function () {
     if (typeof bomberGameActive !== "undefined" && bomberGameActive) return;
 
-    const bet = Number(window.bomberBet) || 1;
+    const bet = 1;
     if (typeof diamonds === "undefined" || diamonds < bet) {
       if (typeof showMessage === "function") showMessage("❌ You need 1 💎.");
       return;
@@ -47,17 +45,13 @@
       });
     }
 
-    const start = document.getElementById("bomberStartButton");
-    const cashout = document.getElementById("bomberCashoutButton");
-    if (start) start.disabled = true;
-    if (cashout) cashout.disabled = true;
-
-    if (typeof updateAllUI === "function") updateAllUI();
+    updateBomberControls();
+    updateAllUI();
     if (typeof updateBomberUI === "function") updateBomberUI();
-    if (typeof saveGame === "function") saveGame();
+    saveGame();
   };
 
-  // Fix Bomber cash-out so the button cannot pay twice.
+  // BOMBER: Cash Out immediately adds the winnings and unlocks a new round.
   window.cashOutBomber = function () {
     if (!bomberGameActive || bomberSafeCount <= 0) return;
 
@@ -65,28 +59,48 @@
     bomberGameActive = false;
     diamonds += win;
 
+    // Do not leave the board in a locked state.
     if (typeof revealBomberBoard === "function") revealBomberBoard();
-    if (typeof updateAllUI === "function") updateAllUI();
+    updateBomberControls();
+    updateAllUI();
     if (typeof updateBomberUI === "function") updateBomberUI();
-    if (typeof saveGame === "function") saveGame();
+    saveGame();
 
-    if (typeof showMessage === "function") showMessage(`💰 Cash Out +${win} 💎`);
+    if (typeof showMessage === "function") showMessage(`💰 Cash Out +${win} 💎 — Balance updated!`);
   };
 
-  // Fix Bomber loss state: save the spent diamond immediately.
+  function updateBomberControls() {
+    const start = document.getElementById("bomberStartButton");
+    const cashout = document.getElementById("bomberCashoutButton");
+
+    // Start is available whenever no round is active.
+    if (start) {
+      start.disabled = !!bomberGameActive;
+      start.textContent = "💎 START — 1 💎";
+    }
+
+    // Cash Out is available only after at least one safe cell.
+    if (cashout) {
+      cashout.disabled = !bomberGameActive || bomberSafeCount <= 0;
+    }
+  }
+
+  // Save a lost Bomber round immediately.
   const originalOpenBomberCell = window.openBomberCell;
   if (typeof originalOpenBomberCell === "function") {
     window.openBomberCell = function (index) {
       const before = bomberGameActive;
       originalOpenBomberCell(index);
-      if (before && !bomberGameActive && typeof saveGame === "function") saveGame();
+      if (before && !bomberGameActive) {
+        updateBomberControls();
+        saveGame();
+      } else {
+        updateBomberControls();
+      }
     };
   }
 
-  // =====================================================
-  // ROLL COST FIX
-  // Roll now costs exactly 100 coins.
-  // =====================================================
+  // ROLL COST: exactly 100 coins.
   window.rollLoot = function () {
     const cost = 100;
 
@@ -97,7 +111,6 @@
 
     coins -= cost;
     totalRolls++;
-
     const item = getRandomLoot();
 
     if (["RARE", "EPIC", "LEGENDARY", "MYTHIC"].includes(item.rarity)) {
@@ -110,7 +123,6 @@
 
     if (item.type === "coins") coins += item.reward;
     if (item.type === "diamonds") diamonds += item.reward;
-
     addInventoryItem(item);
 
     const rarity = document.getElementById("rarity");
@@ -131,9 +143,9 @@
     showMessage(`🎉 You won ${item.name}!`);
   };
 
-  // Keep the visible Roll price synchronized with the real cost.
   document.addEventListener("DOMContentLoaded", () => {
     const rollButton = document.querySelector("#game .main-button[onclick*='rollLoot']");
     if (rollButton) rollButton.textContent = "🎲 ROLL — 100 💵";
+    updateBomberControls();
   });
 })();
