@@ -878,62 +878,80 @@ async function buySkin(item) {
 
 async function buyWithStripe(item) {
 
-    try {
+  try {
 
-        showMessage(
-            "⏳ Opening Stripe Checkout..."
-        );
+    showMessage("⏳ Opening Stripe Checkout...");
 
-        const response =
-            await fetch(
-                `${STRIPE_SERVER_URL}/create-checkout-session`,
-                {
-                    method: "POST",
+    if (!item.productId) {
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+      showMessage(
+        "❌ Product ID is missing."
+      );
 
-                    body: JSON.stringify({
+      return;
+    }
 
-                        productId:
-                            item.productId
+    const response = await fetch(
+      `${STRIPE_SERVER_URL}/create-checkout-session`,
+      {
+        method: "POST",
 
-                    })
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-                }
-            );
+        body: JSON.stringify({
 
-        const data =
-            await response.json();
+          productId:
+            item.productId
 
-        if (!response.ok)
-            throw new Error(
-                data.error ||
-                "Payment failed"
-            );
+        })
 
-        if (!data.url)
-            throw new Error(
-                "Stripe URL missing"
-            );
+      }
+    );
 
-        window.location.href =
-            data.url;
 
-    } catch (error) {
+    const data =
+      await response.json();
 
-        console.error(error);
 
-        showMessage(
-            "❌ Stripe payment could not be started."
-        );
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "Stripe Checkout error."
+      );
 
     }
 
-}
 
+    if (!data.url) {
+
+      throw new Error(
+        "Stripe Checkout URL missing."
+      );
+
+    }
+
+
+    window.location.href =
+      data.url;
+
+
+  } catch (error) {
+
+    console.error(
+      "Stripe error:",
+      error
+    );
+
+    showMessage(
+      "❌ Stripe payment could not be started."
+    );
+
+  }
+
+}
 
 /* =====================================================
    STRIPE SUCCESS
