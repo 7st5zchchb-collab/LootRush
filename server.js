@@ -4,6 +4,7 @@ const cors = require("cors");
 const Stripe = require("stripe");
 const crypto = require("crypto");
 const { Pool } = require("pg");
+const path = require("path");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -136,7 +137,11 @@ function getAccountId(req) {
   } catch { return null; }
 }
 
-app.get("/", (req, res) => res.json({ success: true, service: "LootRush Stripe Server", status: "online" }));
+// Serve the LootRush frontend from this same Render service.
+// This makes https://lootrush-2.onrender.com/ open index.html instead of the server JSON.
+app.use(express.static(path.join(__dirname), { index: "index.html" }));
+
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/health", async (req, res) => {
   const checks = { database: Boolean(pool), session: Boolean(SESSION_SECRET), stripe: Boolean(stripe), webhook: Boolean(STRIPE_WEBHOOK_SECRET) };
   if (!pool) return res.status(503).json({ success:false, status:"unhealthy", checks });
