@@ -34,7 +34,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Stripe-Signature"]
 }));
 
-// Stripe requires the raw body for signature verification.
+// Stripe must receive the raw body here so the signature can be verified.
 app.post("/stripe-webhook", express.raw({ type: "application/json" }), async (req, res) => {
   let event;
   try {
@@ -99,12 +99,16 @@ function signToken(accountId) {
   return `${payload}.${sig}`;
 }
 function getAccountId(req) {
-  const token = String(req.headers.authorization || "").startsWith("Bearer ") ? req.headers.authorization.slice(7) : "";
-  const [payload, sig] = token.split(".");
+  const auth = String(req.headers.authorization || "");
+  if (!auth.startsWith("Bearer ")) return null;
+  const [payload, sig] = auth.slice(7).split(".");
   if (!payload || !sig) return null;
   const expected = crypto.createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
-  try { const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")); return data.exp > Date.now() ? data.id : null; } catch { return null; }
+  try {
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return data.exp > Date.now() ? data.id : null;
+  } catch { return null; }
 }
 
 app.get("/", (req, res) => res.json({ success: true, service: "LootRush Stripe Server", status: "online" }));
@@ -154,15 +158,33 @@ app.post("/create-checkout-session", async (req, res) => {
     const productId = String(req.body.productId || "");
     const product = PRODUCTS[productId];
     if (!product) return res.status(400).json({ error: "Unknown product." });
+
+    const account = await pool.query("SELECT email FROM users WHERE id=$1", [accountId]);
+    if (account.rowCount !== 1) return res.status(401).json({ error: "Account not found." });
+
     const session = await stripe.checkout.sessions.create({
-      mode:"payment", payment_method_types:["card"],
+      mode:"payment",
+      payment_method_types:["card"],
       line_items:[{ price_data:{ currency:"usd", product_data:{name:product.name,description:`${product.diamonds} LootRush Diamonds`}, unit_amount:product.priceCents }, quantity:1 }],
+      customer_email: account.rows[0].email,
       success_url:`${FRONTEND_URL}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:`${FRONTEND_URL}/?payment=cancel`,
       metadata:{ accountId:String(accountId), productId }
     });
     res.json({ success:true, url:session.url });
   } catch (err) { console.error(err); res.status(500).json({ error:"Unable to create checkout session." }); }
+});
+
+// Read-only payment status. It NEVER grants Diamonds; the verified webhook does that.
+app.get("/payment-status", async (req, res) => {
+  try {
+    const accountId = getAccountId(req);
+    const sessionId = String(req.query.session_id || "");
+    if (!accountId || !sessionId || !sessionId.startsWith("cs_")) return res.status(400).json({ error:"Invalid request." });
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (String(session.metadata?.accountId) !== String(accountId)) return res.status(403).json({ error:"Payment does not belong to this account." });
+    res.json({ success:true, paid:session.payment_status === "paid", status:session.status, sessionId:session.id });
+  } catch (err) { console.error(err); res.status(500).json({ error:"Unable to check payment." }); }
 });
 
 async function initDb() {
