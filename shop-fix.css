@@ -7,7 +7,9 @@
   width: 100%;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 28px;
+  padding: 28px 28px 90px;
+  min-height: calc(100vh - 78px);
+  overflow: visible !important;
 }
 
 #shop .page-card > h1 {
@@ -36,6 +38,7 @@
   gap: 18px;
   align-items: stretch;
   justify-items: stretch;
+  overflow: visible !important;
 }
 
 #shop .shop-grid .item {
@@ -52,7 +55,7 @@
   background: linear-gradient(145deg, rgba(30,30,42,.96), rgba(12,12,18,.96));
   border: 1px solid rgba(255,255,255,.09);
   box-shadow: 0 14px 35px rgba(0,0,0,.28), inset 0 0 20px rgba(255,255,255,.018);
-  overflow: hidden;
+  overflow: visible !important;
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
@@ -93,6 +96,7 @@
   display: block;
   margin: 4px 0 12px;
   font-size: 17px;
+  line-height: 1.3;
 }
 
 #shop .buy-button {
@@ -133,6 +137,7 @@
   gap: 9px;
   min-height: 28px;
   margin-bottom: 3px;
+  flex-wrap: wrap;
 }
 
 #shop .diamond-price .old-price {
@@ -155,6 +160,23 @@
   box-shadow: inset 0 0 22px rgba(0,190,255,.08);
 }
 
+/* Make the Shop itself a normal document flow so the browser page can scroll. */
+#shop {
+  min-height: calc(100vh - 78px);
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+#shop .page-card,
+#shop .shop-section,
+#shop .coin-shop-section,
+#shop .diamond-shop-section {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
 @media (max-width: 900px) {
   #shop .shop-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -163,7 +185,7 @@
 
 @media (max-width: 560px) {
   #shop .page-card {
-    padding: 18px 12px;
+    padding: 18px 12px 70px;
   }
 
   #shop .shop-grid {
