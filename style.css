@@ -2778,4 +2778,478 @@ body {
   max-width: 100%;        /* Թույլ չի տալիս անցնել հասանելի լայնությունը */
 }
 
+/* =====================================================
+   LOOTRUSH - SHOP / BUTTON / PAGE FIX
+   ===================================================== */
+
+/* ---------- PAGES ---------- */
+
+.page {
+  display: block;
+  width: min(1400px, 94%);
+  margin: 0 auto;
+  padding: 45px 0 80px;
+  animation: pageIn 0.35s ease;
+}
+
+.page.hidden {
+  display: none !important;
+}
+
+
+/* ---------- SHOP GRID ---------- */
+
+.shop-grid,
+.items-grid,
+.shop-items,
+#coinShopItems,
+#diamondShopItems,
+#inventoryItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+
+/* ---------- ITEM CARD ---------- */
+
+.item {
+  position: relative;
+
+  padding: 25px 20px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(35, 35, 48, 0.96),
+      rgba(12, 12, 18, 0.96)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.35),
+    inset 0 0 25px rgba(255, 255, 255, 0.02);
+
+  text-align: center;
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.item:hover {
+  transform: translateY(-6px);
+
+  border-color: rgba(255, 23, 79, 0.45);
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(255, 23, 79, 0.08);
+}
+
+
+/* ---------- ITEM ICON ---------- */
+
+.item-icon {
+  min-height: 75px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+
+  font-size: 52px;
+
+  line-height: 1;
+}
+
+
+/* ---------- ITEM TITLE ---------- */
+
+.item h2 {
+  margin-bottom: 10px;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.item p {
+  margin-bottom: 12px;
+
+  color: #9999a8;
+
+  font-size: 14px;
+}
+
+
+/* ---------- PRICE ---------- */
+
+.item > strong {
+  display: inline-block;
+
+  margin: 8px 0;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+/* =====================================================
+   DIAMOND SHOP
+   ===================================================== */
+
+.diamond-item {
+  border-color: rgba(0, 190, 255, 0.18);
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(0, 190, 255, 0.10),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(25, 35, 48, 0.98),
+      rgba(9, 12, 18, 0.98)
+    );
+}
+
+.diamond-item:hover {
+  border-color: rgba(0, 190, 255, 0.55);
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(0, 190, 255, 0.12);
+}
+
+
+/* ---------- DIAMOND PRICE ---------- */
+
+.diamond-price {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  margin: 15px 0;
+}
+
+.old-price {
+  color: #777783;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  text-decoration: line-through;
+
+  opacity: 0.8;
+}
+
+.new-price {
+  color: #00e5ff;
+
+  font-size: 24px;
+  font-weight: 900;
+
+  text-shadow:
+    0 0 15px rgba(0, 229, 255, 0.35);
+}
+
+
+/* =====================================================
+   BUY BUTTON
+   ===================================================== */
+
+.buy-button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  min-height: 46px;
+
+  padding: 12px 20px;
+
+  margin-top: 8px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff174f,
+      #c5003b
+    );
+
+  font-size: 15px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(255, 23, 79, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.buy-button:hover {
+  transform: translateY(-3px);
+
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 12px 35px rgba(255, 23, 79, 0.4);
+}
+
+.buy-button:active {
+  transform: translateY(0);
+}
+
+.buy-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   SHOP PREMIUM
+   ===================================================== */
+
+.premium-item {
+  border-color: rgba(255, 215, 0, 0.18);
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(255, 215, 0, 0.08),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(40, 35, 20, 0.95),
+      rgba(12, 12, 12, 0.98)
+    );
+}
+
+
+/* =====================================================
+   INVENTORY
+   ===================================================== */
+
+.inventory-card {
+  min-height: 260px;
+}
+
+.inventory-card strong {
+  display: block;
+
+  margin: 12px 0;
+
+  color: #00e5ff;
+
+  font-size: 18px;
+}
+
+.equip-button {
+  width: 100%;
+
+  padding: 11px 15px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #ffffff;
+
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   EMPTY ITEM
+   ===================================================== */
+
+.empty-item {
+  grid-column: 1 / -1;
+
+  padding: 60px 25px;
+
+  text-align: center;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.empty-icon {
+  font-size: 55px;
+
+  margin-bottom: 15px;
+}
+
+.empty-item h2 {
+  margin-bottom: 10px;
+
+  color: #ffffff;
+}
+
+.empty-item p {
+  color: #8d8d9a;
+}
+
+
+/* =====================================================
+   AUTH FIX
+   ===================================================== */
+
+.auth-overlay.hidden {
+  display: none !important;
+}
+
+.auth-overlay {
+  pointer-events: auto;
+}
+
+.auth-box {
+  position: relative;
+  z-index: 5001;
+}
+
+.auth-btn,
+.auth-switch a {
+  position: relative;
+  z-index: 5002;
+}
+
+
+/* =====================================================
+   NAV BUTTON FIX
+   ===================================================== */
+
+nav button {
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: 1px solid transparent;
+
+  outline: none;
+}
+
+nav button:focus {
+  outline: none;
+}
+
+
+/* =====================================================
+   GENERAL BUTTON FIX
+   ===================================================== */
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+
+  font-family: inherit;
+}
+
+button:not(.buy-button):not(.auth-btn) {
+  color: inherit;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 1000px) {
+
+  header {
+    flex-wrap: wrap;
+
+    padding: 15px;
+  }
+
+  header > h2 {
+    width: 100%;
+  }
+
+  nav {
+    width: 100%;
+
+    overflow-x: auto;
+
+    padding-bottom: 5px;
+  }
+
+  nav button {
+    flex-shrink: 0;
+  }
+
+  .header-right-side {
+    width: 100%;
+
+    justify-content: space-between;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .page {
+    width: 92%;
+
+    padding-top: 30px;
+  }
+
+  .currency-box {
+    gap: 4px;
+  }
+
+  .currency {
+    min-width: auto;
+
+    padding: 7px 8px;
+
+    font-size: 12px;
+  }
+
+  .shop-grid,
+  .items-grid,
+  .shop-items,
+  #coinShopItems,
+  #diamondShopItems,
+  #inventoryItems {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-box {
+    padding: 25px 20px;
+  }
+
+}
 
