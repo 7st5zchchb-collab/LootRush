@@ -1,28 +1,24 @@
 // =====================================================
 // LOOTRUSH GAME FIXES
+// Loaded after game.js through auth.js.
 // =====================================================
 
 (function () {
   "use strict";
 
-  // BOMBER: start a fresh round every time Start is pressed.
   window.startBomberGame = function () {
     if (typeof bomberGameActive !== "undefined" && bomberGameActive) return;
-
-    const bet = 1;
+    const bet = Number(window.bomberBet) || 1;
     if (typeof diamonds === "undefined" || diamonds < bet) {
       if (typeof showMessage === "function") showMessage("❌ You need 1 💎.");
       return;
     }
-
     diamonds -= bet;
     bomberGameActive = true;
     bomberMultiplier = 1;
     bomberSafeCount = 0;
-
     const bombCount = Math.max(1, Math.min(24, Number(bomberBombs) || 3));
     bomberBoard = Array.from({ length: 25 }, () => ({ bomb: false, opened: false }));
-
     let placed = 0;
     while (placed < bombCount) {
       const index = Math.floor(Math.random() * bomberBoard.length);
@@ -31,7 +27,6 @@
         placed++;
       }
     }
-
     const board = document.getElementById("bomberBoard");
     if (board) {
       board.innerHTML = "";
@@ -44,75 +39,48 @@
         board.appendChild(button);
       });
     }
-
-    updateBomberControls();
-    updateAllUI();
+    const start = document.getElementById("bomberStartButton");
+    const cashout = document.getElementById("bomberCashoutButton");
+    if (start) start.disabled = true;
+    if (cashout) cashout.disabled = true;
+    if (typeof updateAllUI === "function") updateAllUI();
     if (typeof updateBomberUI === "function") updateBomberUI();
-    saveGame();
+    if (typeof saveGame === "function") saveGame();
   };
 
-  // BOMBER: Cash Out immediately adds the winnings and unlocks a new round.
   window.cashOutBomber = function () {
     if (!bomberGameActive || bomberSafeCount <= 0) return;
-
     const win = Math.max(1, Math.floor(Number(bomberMultiplier) || 1));
     bomberGameActive = false;
     diamonds += win;
-
-    // Do not leave the board in a locked state.
     if (typeof revealBomberBoard === "function") revealBomberBoard();
-    updateBomberControls();
-    updateAllUI();
+    if (typeof updateAllUI === "function") updateAllUI();
     if (typeof updateBomberUI === "function") updateBomberUI();
-    saveGame();
-
-    if (typeof showMessage === "function") showMessage(`💰 Cash Out +${win} 💎 — Balance updated!`);
+    if (typeof saveGame === "function") saveGame();
+    if (typeof showMessage === "function") showMessage(`💰 Cash Out +${win} 💎`);
   };
 
-  function updateBomberControls() {
-    const start = document.getElementById("bomberStartButton");
-    const cashout = document.getElementById("bomberCashoutButton");
-
-    // Start is available whenever no round is active.
-    if (start) {
-      start.disabled = !!bomberGameActive;
-      start.textContent = "💎 START — 1 💎";
-    }
-
-    // Cash Out is available only after at least one safe cell.
-    if (cashout) {
-      cashout.disabled = !bomberGameActive || bomberSafeCount <= 0;
-    }
-  }
-
-  // Save a lost Bomber round immediately.
   const originalOpenBomberCell = window.openBomberCell;
   if (typeof originalOpenBomberCell === "function") {
     window.openBomberCell = function (index) {
       const before = bomberGameActive;
       originalOpenBomberCell(index);
-      if (before && !bomberGameActive) {
-        updateBomberControls();
-        saveGame();
-      } else {
-        updateBomberControls();
-      }
+      if (before && !bomberGameActive && typeof saveGame === "function") saveGame();
     };
   }
 
-  // ROLL COST: exactly 100 coins.
+  // =====================================================
+  // ROLL COST FIX
+  // =====================================================
   window.rollLoot = function () {
     const cost = 100;
-
     if (coins < cost) {
       showMessage("❌ Not enough coins! You need 100 💵.");
       return;
     }
-
     coins -= cost;
     totalRolls++;
     const item = getRandomLoot();
-
     if (["RARE", "EPIC", "LEGENDARY", "MYTHIC"].includes(item.rarity)) {
       rareItems++;
       streak++;
@@ -120,32 +88,69 @@
     } else {
       streak = 0;
     }
-
     if (item.type === "coins") coins += item.reward;
     if (item.type === "diamonds") diamonds += item.reward;
     addInventoryItem(item);
-
     const rarity = document.getElementById("rarity");
     const icon = document.getElementById("lootIcon");
     const name = document.getElementById("lootName");
     const description = document.getElementById("lootDescription");
     const reward = document.getElementById("reward");
-
     if (rarity) rarity.textContent = item.rarity;
     if (icon) icon.textContent = item.icon;
     if (name) name.textContent = item.name;
     if (description) description.textContent = item.description;
     if (reward) reward.textContent = item.type === "coins" ? `+${item.reward} 💵` : `+${item.reward} 💎`;
-
     updateAllUI();
     renderInventory();
     saveGame();
     showMessage(`🎉 You won ${item.name}!`);
   };
 
+  // =====================================================
+  // GAME INFO / ODDS PANEL
+  // Uses the real loot[] chance values from game.js.
+  // Current odds: 45% + 25% + 15% + 8% + 5% + 2% = 100%.
+  // =====================================================
+  function renderGameOdds() {
+    const gameSection = document.getElementById("game");
+    if (!gameSection || typeof loot === "undefined" || !Array.isArray(loot)) return;
+
+    let panel = document.getElementById("gameOddsInfo");
+    if (!panel) {
+      const rollButton = gameSection.querySelector(".main-button[onclick*='rollLoot']");
+      if (!rollButton) return;
+      panel = document.createElement("div");
+      panel.id = "gameOddsInfo";
+      rollButton.insertAdjacentElement("afterend", panel);
+    }
+
+    const totalChance = loot.reduce((sum, item) => sum + Number(item.chance || 0), 0) || 1;
+    const rows = loot.map(item => {
+      const chance = Number(item.chance || 0) / totalChance * 100;
+      const rewardText = item.type === "coins"
+        ? `+${item.reward} 💵`
+        : `+${item.reward} 💎`;
+      return `<div class="odds-row">
+        <span class="odds-item"><span class="odds-icon">${item.icon}</span><span>${item.name}</span></span>
+        <strong>${rewardText}</strong>
+        <span class="odds-chance">${chance.toFixed(0)}%</span>
+      </div>`;
+    }).join("");
+
+    panel.innerHTML = `
+      <div class="odds-header">
+        <div><span class="odds-title">ℹ️ Roll Info</span><span class="odds-subtitle">Each Roll costs 100 💵</span></div>
+        <span class="odds-total">100% total</span>
+      </div>
+      <div class="odds-table-head"><span>Reward</span><span>Win</span><span>Chance</span></div>
+      <div class="odds-rows">${rows}</div>
+    `;
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     const rollButton = document.querySelector("#game .main-button[onclick*='rollLoot']");
     if (rollButton) rollButton.textContent = "🎲 ROLL — 100 💵";
-    updateBomberControls();
+    renderGameOdds();
   });
 })();
