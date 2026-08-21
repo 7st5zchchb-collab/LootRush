@@ -6,6 +6,7 @@ const Stripe = require("stripe");
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://7st5zchchb-collab.github.io/LootRush";
 
 if (!STRIPE_SECRET_KEY) {
@@ -24,10 +25,70 @@ app.use(cors({
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
 }));
+
+// Stripe webhook MUST receive the raw request body for signature verification.
+app.post("/stripe-webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  if (!STRIPE_WEBHOOK_SECRET) {
+    return res.status(503).json({ error: "STRIPE_WEBHOOK_SECRET is not configured." });
+  }
+
+  const signature = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, signature, STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    console.error("❌ Stripe webhook signature error:", error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object;
+        console.log(`✅ Stripe payment completed: ${session.id}`);
+        console.log(`   Product: ${session.metadata?.productId || "unknown"}`);
+        console.log(`   Payment status: ${session.payment_status}`);
+        break;
+      }
+
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object;
+        console.log(`✅ Stripe async payment succeeded: ${session.id}`);
+        break;
+      }
+
+      case "checkout.session.async_payment_failed": {
+        const session = event.data.object;
+        console.log(`⚠️ Stripe async payment failed: ${session.id}`);
+        break;
+      }
+
+      default:
+        break;
+    }
+
+    return res.json({ received: true });
+  } catch (error) {
+    console.error("❌ Stripe webhook handler error:", error);
+    return res.status(500).json({ error: "Webhook handler failed." });
+  }
+});
+
 app.use(express.json());
 
-app.get("/", (req, res) => res.json({ success: true, service: "LootRush Stripe Server", status: "online" }));
-app.get("/health", (req, res) => res.json({ success: true, status: "healthy" }));
+app.get("/", (req, res) => res.json({
+  success: true,
+  service: "LootRush Stripe Server",
+  status: "online"
+}));
+
+app.get("/health", (req, res) => res.json({
+  success: true,
+  status: "healthy",
+  stripeConfigured: Boolean(STRIPE_SECRET_KEY),
+  webhookConfigured: Boolean(STRIPE_WEBHOOK_SECRET)
+}));
 
 const PRODUCTS = {
   diamonds_50: { name: "50 Diamonds", diamonds: 50, price: 39.99 },
@@ -39,9 +100,12 @@ const PRODUCTS = {
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
-    const { productId } = req.body;
+    const { productId } = req.body || {};
     const product = PRODUCTS[productId];
-    if (!product) return res.status(400).json({ error: "Unknown product." });
+
+    if (!product) {
+      return res.status(400).json({ error: "Unknown product." });
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -65,43 +129,66 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
-    res.json({ success: true, url: session.url, sessionId: session.id });
+    return res.json({
+      success: true,
+      url: session.url,
+      sessionId: session.id
+    });
   } catch (error) {
     console.error("❌ Stripe Checkout Error:", error);
-    res.status(500).json({ error: error.message || "Unable to create Stripe Checkout session." });
+    return res.status(500).json({
+      error: error.message || "Unable to create Stripe Checkout session."
+    });
   }
 });
 
 app.get("/verify-payment", async (req, res) => {
   try {
-    const sessionId = req.query.session_id;
-    if (!sessionId) return res.status(400).json({ success: false, error: "session_id is required." });
+    const sessionId = String(req.query.session_id || "").trim();
+
+    if (!sessionId || !sessionId.startsWith("cs_")) {
+      return res.status(400).json({
+        success: false,
+        error: "Valid Stripe Checkout session_id is required."
+      });
+    }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const paid = session.payment_status === "paid";
 
     if (!paid) {
-      return res.json({ success: false, paid: false, status: session.payment_status });
+      return res.json({
+        success: false,
+        paid: false,
+        status: session.payment_status
+      });
     }
 
     const productId = session.metadata?.productId;
     const product = productId ? PRODUCTS[productId] : null;
+
     if (!product) {
-      return res.status(400).json({ success: false, paid: true, error: "Product information not found." });
+      return res.status(400).json({
+        success: false,
+        paid: true,
+        error: "Product information not found."
+      });
     }
 
-    // Durable idempotency: mark the Stripe PaymentIntent as delivered.
-    // This prevents the same successful payment from granting Diamonds again
-    // after a page refresh or a Render server restart.
     const paymentIntentId = typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id;
 
     if (!paymentIntentId) {
-      return res.status(400).json({ success: false, paid: true, error: "PaymentIntent not found." });
+      return res.status(400).json({
+        success: false,
+        paid: true,
+        error: "PaymentIntent not found."
+      });
     }
 
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
     if (paymentIntent.metadata?.lootRushDelivered === "true") {
       return res.json({
         success: false,
@@ -112,6 +199,10 @@ app.get("/verify-payment", async (req, res) => {
       });
     }
 
+    // Mark the PaymentIntent before returning the reward. This is a durable
+    // guard across refreshes and Render restarts. For production-grade
+    // fulfillment, use the webhook plus a real database/ledger as the source
+    // of truth rather than localStorage.
     await stripe.paymentIntents.update(paymentIntentId, {
       metadata: {
         ...paymentIntent.metadata,
@@ -131,7 +222,10 @@ app.get("/verify-payment", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Payment verification error:", error);
-    res.status(500).json({ success: false, error: "Unable to verify payment." });
+    return res.status(500).json({
+      success: false,
+      error: "Unable to verify payment."
+    });
   }
 });
 
@@ -140,6 +234,7 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log("🚀 LootRush Stripe Server");
   console.log(`🌐 Port: ${PORT}`);
   console.log(`🔗 Frontend: ${FRONTEND_URL}`);
-  console.log("💳 Stripe: READY");
+  console.log(`💳 Stripe: ${STRIPE_SECRET_KEY ? "READY" : "MISSING KEY"}`);
+  console.log(`🪝 Webhook: ${STRIPE_WEBHOOK_SECRET ? "READY" : "NOT CONFIGURED"}`);
   console.log("====================================");
 });
