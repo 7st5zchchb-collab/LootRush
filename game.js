@@ -3,7 +3,7 @@
    LOOTRUSH GAME.JS
 ===================================================== */
 const STRIPE_SERVER_URL =
-  "https://lootrush-jy0e.onrender.com";
+  "https://lootrush-2.onrender.com";
 
 
 /* =====================================================
