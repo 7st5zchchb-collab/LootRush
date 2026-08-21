@@ -1,6 +1,6 @@
 // =====================================================
 // LOOTRUSH AUTH — SINGLE AUTH SYSTEM
-// Compatible with the existing game.js and index.html.
+// Compatible with game.js and index.html.
 // =====================================================
 
 function getUser() {
@@ -89,8 +89,6 @@ function handleRegister() {
   };
 
   localStorage.setItem("lootRushUser", JSON.stringify(user));
-
-  // Keep compatibility with the old game.js storage names.
   localStorage.setItem("registeredUsername", username);
   localStorage.setItem("registeredEmail", email);
   localStorage.setItem("registeredPassword", password);
@@ -179,6 +177,8 @@ function handleLogin() {
 }
 
 function logout() {
+  syncUserFromGame();
+
   localStorage.setItem("lootRushLoggedIn", "false");
   localStorage.setItem("loggedIn", "false");
 
@@ -189,6 +189,39 @@ function logout() {
 
   const passwordInput = document.getElementById("loginPassword");
   if (passwordInput) passwordInput.value = "";
+}
+
+// =====================================================
+// KEEP ACCOUNT DATA IN SYNC WITH game.js
+// =====================================================
+
+function syncUserFromGame() {
+  const user = getUser();
+  if (!user) return;
+
+  const coinsValue = Number(localStorage.getItem("coins"));
+  const diamondsValue = Number(localStorage.getItem("diamonds"));
+  const pointsValue = Number(localStorage.getItem("points"));
+
+  if (Number.isFinite(coinsValue)) user.coins = coinsValue;
+  if (Number.isFinite(diamondsValue)) user.diamonds = diamondsValue;
+  if (Number.isFinite(pointsValue)) user.points = pointsValue;
+
+  user.username = localStorage.getItem("playerName") || user.username;
+  localStorage.setItem("lootRushUser", JSON.stringify(user));
+}
+
+// game.js defines saveGame before auth.js loads. Wrap it so every
+// later game save also updates the logged-in user's account snapshot.
+if (typeof window.saveGame === "function" && !window.__lootRushSaveWrapped) {
+  const originalSaveGame = window.saveGame;
+
+  window.saveGame = function () {
+    originalSaveGame();
+    syncUserFromGame();
+  };
+
+  window.__lootRushSaveWrapped = true;
 }
 
 // Backward-compatible aliases.
@@ -204,4 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (user?.username) {
     localStorage.setItem("playerName", user.username);
   }
+
+  syncUserFromGame();
 });
+
+window.addEventListener("beforeunload", syncUserFromGame);
