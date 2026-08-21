@@ -957,67 +957,149 @@ async function buyWithStripe(item) {
    STRIPE SUCCESS
 ===================================================== */
 
-function checkStripePayment() {
+async function checkStripePayment() {
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
-    const payment =
-        params.get("payment");
 
-    const diamondsAmount =
+  const payment =
+    params.get("payment");
+
+  const sessionId =
+    params.get("session_id");
+
+
+  /* ==========================================
+     PAYMENT CANCEL
+  ========================================== */
+
+  if (payment === "cancel") {
+
+    showMessage(
+      "❌ Payment cancelled."
+    );
+
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+
+    return;
+  }
+
+
+  /* ==========================================
+     PAYMENT SUCCESS
+  ========================================== */
+
+  if (
+    payment !== "success" ||
+    !sessionId
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    showMessage(
+      "⏳ Verifying payment..."
+    );
+
+
+    const response =
+      await fetch(
+        `${STRIPE_SERVER_URL}/verify-payment?session_id=${encodeURIComponent(sessionId)}`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "Payment verification failed."
+      );
+
+    }
+
+
+    /* ==========================================
+       PAYMENT CONFIRMED
+    ========================================== */
+
+    if (
+      data.success === true &&
+      data.paid === true &&
+      Number(data.diamonds) > 0
+    ) {
+
+      const diamondsToAdd =
         Number(
-            params.get("diamonds")
+          data.diamonds
         );
 
-    if (payment === "success") {
 
-        if (
-            Number.isFinite(diamondsAmount) &&
-            diamondsAmount > 0
-        ) {
+      diamonds +=
+        diamondsToAdd;
 
-            diamonds += diamondsAmount;
 
-            showMessage(
-                `✅ Payment successful! +${diamondsAmount} 💎`
-            );
+      updateAllUI();
 
-        } else {
+      saveGame();
 
-            showMessage(
-                "✅ Payment successful!"
-            );
 
-        }
+      showMessage(
+        `✅ Payment successful! +${diamondsToAdd} 💎 added.`
+      );
 
-        updateAllUI();
 
-        saveGame();
+    } else {
 
-        window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-        );
+      showMessage(
+        "❌ Payment was not completed."
+      );
 
     }
 
-    if (payment === "cancel") {
 
-        showMessage(
-            "❌ Payment cancelled."
-        );
+  } catch (error) {
 
-        window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-        );
+    console.error(
+      "Payment verification error:",
+      error
+    );
 
-    }
+
+    showMessage(
+      "❌ Could not verify Stripe payment."
+    );
+
+
+  } finally {
+
+    /* ==========================================
+       CLEAN URL
+    ========================================== */
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+  }
 
 }
 
