@@ -1,15 +1,8 @@
 // =====================================================
-// LOOTRUSH AUTH — SINGLE AUTH SYSTEM
-// Compatible with game.js and index.html.
+// LOOTRUSH SERVER AUTH
+// Real account + server-side balance. No client balance authority.
 // =====================================================
-
-function getUser() {
-  try {
-    return JSON.parse(localStorage.getItem("lootRushUser")) || null;
-  } catch {
-    return null;
-  }
-}
+const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
 
 function showMessage(text) {
   const message = document.getElementById("message");
@@ -17,193 +10,112 @@ function showMessage(text) {
   message.textContent = text;
   message.classList.add("show");
   clearTimeout(window.__lootRushMessageTimer);
-  window.__lootRushMessageTimer = setTimeout(() => {
-    message.classList.remove("show");
-  }, 2500);
+  window.__lootRushMessageTimer = setTimeout(() => message.classList.remove("show"), 3000);
 }
-
 function switchAuthForm(form) {
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
   if (!loginForm || !registerForm) return;
-
-  if (form === "register") {
-    loginForm.classList.add("hidden");
-    registerForm.classList.remove("hidden");
-  } else {
-    registerForm.classList.add("hidden");
-    loginForm.classList.remove("hidden");
-  }
+  loginForm.classList.toggle("hidden", form !== "login");
+  registerForm.classList.toggle("hidden", form !== "register");
 }
-
-function isLoggedIn() {
-  return (
-    localStorage.getItem("lootRushLoggedIn") === "true" ||
-    localStorage.getItem("loggedIn") === "true"
-  );
-}
-
-function checkAuth() {
-  const overlay = document.getElementById("authOverlay");
-  if (!overlay) return;
-
-  if (isLoggedIn()) {
-    overlay.classList.add("hidden");
-  } else {
-    overlay.classList.remove("hidden");
-  }
-}
-
-function handleRegister() {
-  const username = document.getElementById("regUsername")?.value.trim();
-  const email = document.getElementById("regEmail")?.value.trim();
-  const password = document.getElementById("regPassword")?.value;
-
-  if (!username || !email || !password) {
-    showMessage("❌ Fill in all fields!");
-    return;
-  }
-  if (username.length < 3) {
-    showMessage("❌ Username must be at least 3 characters!");
-    return;
-  }
-  if (!email.includes("@")) {
-    showMessage("❌ Enter a valid email!");
-    return;
-  }
-  if (password.length < 4) {
-    showMessage("❌ Password must be at least 4 characters!");
-    return;
-  }
-
-  const user = { username, email, password, coins: 150, diamonds: 0, points: 0 };
-
-  localStorage.setItem("lootRushUser", JSON.stringify(user));
-  localStorage.setItem("registeredUsername", username);
-  localStorage.setItem("registeredEmail", email);
-  localStorage.setItem("registeredPassword", password);
-  localStorage.setItem("playerName", username);
-  localStorage.setItem("coins", "150");
-  localStorage.setItem("diamonds", "0");
-  localStorage.setItem("points", "0");
-  localStorage.setItem("lootRushLoggedIn", "false");
-  localStorage.setItem("loggedIn", "false");
-
-  showMessage("✅ Account created! Now sign in.");
-
-  setTimeout(() => {
-    switchAuthForm("login");
-    const loginEmail = document.getElementById("loginEmail");
-    if (loginEmail) loginEmail.value = email;
-  }, 700);
-}
-
-function handleLogin() {
-  const email = document.getElementById("loginEmail")?.value.trim();
-  const password = document.getElementById("loginPassword")?.value;
-  let user = getUser();
-
-  if (!user) {
-    const oldEmail = localStorage.getItem("registeredEmail");
-    const oldPassword = localStorage.getItem("registeredPassword");
-    const oldUsername = localStorage.getItem("registeredUsername");
-
-    if (oldEmail && oldPassword) {
-      user = {
-        username: oldUsername || "Guest",
-        email: oldEmail,
-        password: oldPassword,
-        coins: Number(localStorage.getItem("coins")) || 150,
-        diamonds: Number(localStorage.getItem("diamonds")) || 0,
-        points: Number(localStorage.getItem("points")) || 0
-      };
-      localStorage.setItem("lootRushUser", JSON.stringify(user));
-    }
-  }
-
-  if (!email || !password) {
-    showMessage("❌ Enter email and password!");
-    return;
-  }
-  if (!user) {
-    showMessage("❌ Account not found! Register first.");
-    return;
-  }
-  if (email.toLowerCase() !== String(user.email).toLowerCase() || password !== user.password) {
-    showMessage("❌ Wrong email or password!");
-    return;
-  }
-
+function getToken() { return localStorage.getItem("lootRushToken") || ""; }
+function getUser() { try { return JSON.parse(localStorage.getItem("lootRushUser")) || null; } catch { return null; } }
+function setSession(data) {
+  localStorage.setItem("lootRushToken", data.token);
   localStorage.setItem("lootRushLoggedIn", "true");
   localStorage.setItem("loggedIn", "true");
-  localStorage.setItem("playerName", user.username || "Guest");
-  localStorage.setItem("coins", String(Number(user.coins) || 150));
-  localStorage.setItem("diamonds", String(Number(user.diamonds) || 0));
-  localStorage.setItem("points", String(Number(user.points) || 0));
-
-  const overlay = document.getElementById("authOverlay");
-  if (overlay) overlay.classList.add("hidden");
-
-  const passwordInput = document.getElementById("loginPassword");
-  if (passwordInput) passwordInput.value = "";
-
+  localStorage.setItem("lootRushUser", JSON.stringify(data.user));
+  localStorage.setItem("playerName", data.user.username);
+  // These are UI cache only. Server remains authoritative.
+  localStorage.setItem("coins", String(data.user.coins));
+  localStorage.setItem("diamonds", String(data.user.diamonds));
+  localStorage.setItem("points", String(data.user.points));
+}
+function applyServerUser(user) {
+  localStorage.setItem("lootRushUser", JSON.stringify(user));
+  localStorage.setItem("playerName", user.username);
+  coins = Number(user.coins);
+  diamonds = Number(user.diamonds);
+  points = Number(user.points);
+  localStorage.setItem("coins", String(coins));
+  localStorage.setItem("diamonds", String(diamonds));
+  localStorage.setItem("points", String(points));
   if (typeof updateAllUI === "function") updateAllUI();
-  if (typeof saveGame === "function") saveGame();
-  showMessage(`✅ Welcome ${user.username || "Guest"}!`);
+}
+async function refreshServerUser() {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const r = await fetch(`${LOOTRUSH_SERVER}/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    if (!r.ok) throw new Error("Session expired");
+    const data = await r.json();
+    applyServerUser(data.user);
+    return true;
+  } catch {
+    localStorage.removeItem("lootRushToken");
+    localStorage.setItem("lootRushLoggedIn", "false");
+    localStorage.setItem("loggedIn", "false");
+    return false;
+  }
+}
+function checkAuth() {
+  const overlay = document.getElementById("authOverlay");
+  if (overlay) overlay.classList.toggle("hidden", Boolean(getToken()));
 }
 
-function syncUserFromGame() {
-  const user = getUser();
-  if (!user) return;
+async function handleRegister() {
+  const username = document.getElementById("regUsername")?.value.trim();
+  const email = document.getElementById("regEmail")?.value.trim();
+  const password = document.getElementById("regPassword")?.value || "";
+  if (username.length < 3 || !email.includes("@") || password.length < 6) {
+    showMessage("❌ Username 3+, valid email and password 6+ characters required."); return;
+  }
+  try {
+    const r = await fetch(`${LOOTRUSH_SERVER}/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username,email,password}) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Registration failed");
+    showMessage("✅ Account created. Sign in now.");
+    document.getElementById("loginEmail").value = email;
+    switchAuthForm("login");
+  } catch (e) { showMessage(`❌ ${e.message}`); }
+}
 
-  const c = Number(localStorage.getItem("coins"));
-  const d = Number(localStorage.getItem("diamonds"));
-  const p = Number(localStorage.getItem("points"));
-
-  if (Number.isFinite(c)) user.coins = c;
-  if (Number.isFinite(d)) user.diamonds = d;
-  if (Number.isFinite(p)) user.points = p;
-  user.username = localStorage.getItem("playerName") || user.username;
-
-  localStorage.setItem("lootRushUser", JSON.stringify(user));
+async function handleLogin() {
+  const email = document.getElementById("loginEmail")?.value.trim();
+  const password = document.getElementById("loginPassword")?.value || "";
+  if (!email || !password) { showMessage("❌ Enter email and password!"); return; }
+  try {
+    const r = await fetch(`${LOOTRUSH_SERVER}/login`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email,password}) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Login failed");
+    setSession(data);
+    const overlay = document.getElementById("authOverlay");
+    if (overlay) overlay.classList.add("hidden");
+    showMessage(`✅ Welcome ${data.user.username}!`);
+    await refreshServerUser();
+  } catch (e) { showMessage(`❌ ${e.message}`); }
 }
 
 function logout() {
-  syncUserFromGame();
+  localStorage.removeItem("lootRushToken");
   localStorage.setItem("lootRushLoggedIn", "false");
   localStorage.setItem("loggedIn", "false");
-
   const overlay = document.getElementById("authOverlay");
   if (overlay) overlay.classList.remove("hidden");
   switchAuthForm("login");
-
-  const passwordInput = document.getElementById("loginPassword");
-  if (passwordInput) passwordInput.value = "";
 }
-
+function isLoggedIn() { return Boolean(getToken()); }
 function register() { handleRegister(); }
 function login() { handleLogin(); }
 function showRegister() { switchAuthForm("register"); }
 function showLogin() { switchAuthForm("login"); }
 
-// Load post-game fixes after game.js has finished defining its functions.
-(function loadGameFixes() {
-  if (window.__lootRushGameFixesLoaded) return;
-  window.__lootRushGameFixesLoaded = true;
-  const script = document.createElement("script");
-  script.src = "game-fixes.js?v=3";
-  script.defer = false;
-  script.onload = () => {
-    if (typeof updateAllUI === "function") updateAllUI();
-  };
-  document.head.appendChild(script);
-})();
-
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+  const ok = await refreshServerUser();
   checkAuth();
-  const user = getUser();
-  if (user?.username) localStorage.setItem("playerName", user.username);
-  syncUserFromGame();
+  if (ok) {
+    const user = getUser();
+    if (user) document.getElementById("playerNameTop")?.replaceChildren(document.createTextNode(user.username));
+  }
 });
-
-window.addEventListener("beforeunload", syncUserFromGame);
