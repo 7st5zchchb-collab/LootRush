@@ -3,105 +3,1046 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>LootRush - Խաղա և Հաղթիր</title>
-    <!-- Միացնում ենք CSS ոճերը -->
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <!-- ԱՎՏՈՐԻԶԱՑԻԱՅԻ ՊԱՏՈՒՀԱՆ (LOGIN / REGISTER) -->
-    <div id="authOverlay" class="auth-overlay">
-        <div class="auth-box">
-            
-            <!-- ՄՈՒՏՔԻ ԲԱԺԻՆ (LOGIN) -->
-            <div id="loginForm">
-                <h2>Welcome to <span>LootRush</span></h2>
-                <p class="auth-subtitle">Sign in to your account to continue</p>
-                
-                <div class="input-group">
-                    <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="Enter your email">
-                </div>
-                
-                <div class="input-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter your password">
-                </div>
-                
-                <!-- Սեղմելիս կանչվում է handleLogin()-ը game.js-ից -->
-                <button class="auth-btn" onclick="handleLogin()">🚪 Sign In</button>
-                
-                <p class="auth-switch">
-                    Don't have an account? <a href="#" onclick="switchAuthForm('register')">Register here</a>
-                </p>
+<!-- =====================================================
+     AUTH OVERLAY
+===================================================== -->
+
+<div id="authOverlay" class="auth-overlay">
+
+    <div class="auth-box">
+
+        <!-- LOGIN -->
+
+        <div id="loginForm">
+
+            <h2>
+                Welcome to <span>LootRush</span>
+            </h2>
+
+            <p class="auth-subtitle">
+                Sign in to your account to continue
+            </p>
+
+            <div class="input-group">
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                >
+
             </div>
 
-            <!-- ԳՐԱՆՑՄԱՆ ԲԱԺԻՆ (REGISTER) -->
-            <div id="registerForm" class="hidden">
-                <h2>Create Account</h2>
-                <p class="auth-subtitle">Join LootRush and start winning rewards</p>
-                
-                <div class="input-group">
-                    <label for="regUsername">Username</label>
-                    <input type="text" id="regUsername" placeholder="Enter username">
-                </div>
-                
-                <div class="input-group">
-                    <label for="regEmail">Email Address</label>
-                    <input type="email" id="regEmail" placeholder="Enter email">
-                </div>
-                
-                <div class="input-group">
-                    <label for="regPassword">Password</label>
-                    <input type="password" id="regPassword" placeholder="Password (min. 6 characters)">
-                </div>
-                
-                <!-- Սեղմելիս կանչվում է handleRegister()-ը game.js-ից -->
-                <button class="auth-btn" onclick="handleRegister()">📝 Register</button>
-                
-                <p class="auth-switch">
-                    Already have an account? <a href="#" onclick="switchAuthForm('login')">Sign in here</a>
-                </p>
+            <div class="input-group">
+
+                <label for="loginPassword">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                >
+
             </div>
+
+            <button
+                type="button"
+                class="auth-btn"
+                onclick="handleLogin()"
+            >
+                🚪 Sign In
+            </button>
+
+            <p class="auth-switch">
+
+                Don't have an account?
+
+                <a
+                    href="#"
+                    onclick="switchAuthForm('register'); return false;"
+                >
+                    Register here
+                </a>
+
+            </p>
 
         </div>
+
+
+        <!-- REGISTER -->
+
+        <div
+            id="registerForm"
+            class="hidden"
+        >
+
+            <h2>
+                Create Account
+            </h2>
+
+            <p class="auth-subtitle">
+                Join LootRush and start winning rewards
+            </p>
+
+            <div class="input-group">
+
+                <label for="regUsername">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="regUsername"
+                    placeholder="Enter username"
+                    autocomplete="username"
+                >
+
+            </div>
+
+            <div class="input-group">
+
+                <label for="regEmail">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="regEmail"
+                    placeholder="Enter email"
+                    autocomplete="email"
+                >
+
+            </div>
+
+            <div class="input-group">
+
+                <label for="regPassword">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="regPassword"
+                    placeholder="Password (min. 6 characters)"
+                    autocomplete="new-password"
+                >
+
+            </div>
+
+            <button
+                type="button"
+                class="auth-btn"
+                onclick="handleRegister()"
+            >
+                📝 Register
+            </button>
+
+            <p class="auth-switch">
+
+                Already have an account?
+
+                <a
+                    href="#"
+                    onclick="switchAuthForm('login'); return false;"
+                >
+                    Sign in here
+                </a>
+
+            </p>
+
+        </div>
+
     </div>
 
-    <!-- ԽԱՂԻ ԳԼԽԱՎՈՐ ԻՆՏԵՐՖԵՅՍԸ (Մուտք գործելուց հետո) -->
-    <header>
-        <h2><span>LootRush</span></h2>
-        <nav>
-            <button onclick="showPage('game')">🎲 Game</button>
-            <button onclick="showPage('shop')">🛒 Shop</button>
-            <button onclick="showPage('inventory')">🎒 Inventory</button>
-            <button onclick="showPage('rewards')">🎁 Rewards</button>
-            <button onclick="showPage('bomber')">💣 Bomber</button>
-            <button onclick="showPage('crash')">📈 Multiplier</button>
-            <button onclick="showPage('wallet')">💳 Wallet</button>
-        </nav>
-        
-        <div class="header-right-side">
-            <div class="currency-box">
-                <div class="currency coins">💵 <span id="coins">150</span></div>
-                <div class="currency diamonds">💎 <span id="diamonds">0</span></div>
-                <div class="currency points">⭐ <span id="points">0</span></div>
+</div>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header>
+
+    <div class="logo">
+
+        <h2>
+            <span>LootRush</span>
+        </h2>
+
+    </div>
+
+
+    <nav>
+
+        <button
+            type="button"
+            onclick="showPage('game')"
+        >
+            🎲 Game
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('shop')"
+        >
+            🛒 Shop
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('inventory')"
+        >
+            🎒 Inventory
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('rewards')"
+        >
+            🎁 Rewards
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('bomber')"
+        >
+            💣 Bomber
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('crash')"
+        >
+            📈 Multiplier
+        </button>
+
+        <button
+            type="button"
+            onclick="showPage('wallet')"
+        >
+            💳 Wallet
+        </button>
+
+    </nav>
+
+
+    <div class="header-right-side">
+
+        <div class="currency-box">
+
+            <div class="currency coins">
+                💵
+                <span id="coins">150</span>
             </div>
-            <div class="player-menu">
-                <button class="player-avatar" onclick="togglePlayerMenu()">
-                    <img id="playerAvatar" src="default-avatar.png" alt="Avatar">
-                </button>
-                <div id="profileDropdown" class="profile-dropdown">
-                    <div class="profile-name" id="playerNameTop">Guest</div>
-                    <button class="profile-option" onclick="logout()">🚪 Log Out</button>
-                </div>
+
+            <div class="currency diamonds">
+                💎
+                <span id="diamonds">0</span>
             </div>
+
+            <div class="currency points">
+                ⭐
+                <span id="points">0</span>
+            </div>
+
         </div>
-    </header>
 
-    <!-- Ծանուցումների պատուհան (showMessage ֆունկցիայի համար) -->
-    <div id="message"></div>
 
-    <!-- ԿԱՐԵՎՈՐ. JavaScript-ը միացնում ենք ԷՋԻ ԱՄԵՆԱՎԵՐՋՈՒՄ -->
-    <script src="game.js"></script>
+        <div class="player-menu">
+
+            <button
+                type="button"
+                class="player-avatar"
+                onclick="togglePlayerMenu()"
+            >
+
+                <img
+                    id="playerAvatar"
+                    src="default-avatar.png"
+                    alt="Avatar"
+                >
+
+            </button>
+
+
+            <div
+                id="profileDropdown"
+                class="profile-dropdown"
+            >
+
+                <div
+                    class="profile-name"
+                    id="playerNameTop"
+                >
+                    Guest
+                </div>
+
+                <button
+                    type="button"
+                    class="profile-option"
+                    onclick="logout()"
+                >
+                    🚪 Log Out
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     MESSAGE
+===================================================== -->
+
+<div id="message"></div>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main id="mainContent">
+
+
+<!-- =====================================================
+     GAME
+===================================================== -->
+
+<section
+    id="game"
+    class="page"
+>
+
+    <div class="page-header">
+
+        <h1>
+            🎲 LootRush
+        </h1>
+
+        <p>
+            Roll the loot and win rewards!
+        </p>
+
+    </div>
+
+
+    <div class="game-container">
+
+        <div class="loot-card">
+
+            <div
+                id="rarity"
+                class="rarity"
+            >
+                READY
+            </div>
+
+            <div
+                id="lootIcon"
+                class="loot-icon"
+            >
+                🎁
+            </div>
+
+            <h2 id="lootName">
+                Mystery Loot
+            </h2>
+
+            <p id="lootDescription">
+                Roll to discover your reward.
+            </p>
+
+            <div
+                id="reward"
+                class="reward"
+            >
+                +0
+            </div>
+
+            <button
+                type="button"
+                class="roll-button"
+                onclick="rollLoot()"
+            >
+                🎲 ROLL
+            </button>
+
+        </div>
+
+
+        <div class="stats-container">
+
+            <div class="stat-card">
+
+                <span>
+                    🎲 Rolls
+                </span>
+
+                <strong id="rolls">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>
+                    🔥 Best Streak
+                </span>
+
+                <strong id="streak">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>
+                    💎 Rare Items
+                </span>
+
+                <strong id="rareItems">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SHOP
+===================================================== -->
+
+<section
+    id="shop"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            🛒 Shop
+        </h1>
+
+        <p>
+            Buy skins and diamonds.
+        </p>
+
+    </div>
+
+
+    <div class="shop-section">
+
+        <h2>
+            🎨 Coin Shop
+        </h2>
+
+        <div
+            id="coinShopItems"
+            class="items-grid"
+        ></div>
+
+    </div>
+
+
+    <div class="shop-section">
+
+        <h2>
+            💎 Diamond Shop
+        </h2>
+
+        <div
+            id="diamondShopItems"
+            class="items-grid"
+        ></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     INVENTORY
+===================================================== -->
+
+<section
+    id="inventory"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            🎒 Inventory
+        </h1>
+
+        <p>
+            Your collected items.
+        </p>
+
+    </div>
+
+
+    <div
+        id="inventoryItems"
+        class="items-grid"
+    ></div>
+
+</section>
+
+
+<!-- =====================================================
+     REWARDS
+===================================================== -->
+
+<section
+    id="rewards"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            🎁 Daily Rewards
+        </h1>
+
+        <p>
+            Come back every day and collect rewards.
+        </p>
+
+    </div>
+
+
+    <div class="reward-container">
+
+        <div class="daily-reward-card">
+
+            <div class="reward-icon">
+                🎁
+            </div>
+
+            <h2>
+                Daily Reward
+            </h2>
+
+            <p>
+                Claim your daily reward.
+            </p>
+
+            <button
+                type="button"
+                class="auth-btn"
+                onclick="claimDailyReward()"
+            >
+                🎁 Claim Reward
+            </button>
+
+            <div
+                id="rewardTimer"
+                class="reward-timer"
+            >
+                Next reward in 0h 0m 0s
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     BOMBER
+===================================================== -->
+
+<section
+    id="bomber"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            💣 Bomber
+        </h1>
+
+        <p>
+            Find diamonds. Avoid the bombs.
+        </p>
+
+    </div>
+
+
+    <div class="bomber-container">
+
+        <div class="bomber-controls">
+
+            <label for="bomberBombSelector">
+                Bombs
+            </label>
+
+            <select
+                id="bomberBombSelector"
+                onchange="changeBomberBombs()"
+            >
+
+                <option value="1">
+                    1 Bomb
+                </option>
+
+                <option value="2">
+                    2 Bombs
+                </option>
+
+                <option value="3" selected>
+                    3 Bombs
+                </option>
+
+                <option value="4">
+                    4 Bombs
+                </option>
+
+                <option value="5">
+                    5 Bombs
+                </option>
+
+            </select>
+
+
+            <button
+                id="bomberStartButton"
+                type="button"
+                onclick="startBomberGame()"
+            >
+                💣 Start
+            </button>
+
+
+            <button
+                id="bomberCashoutButton"
+                type="button"
+                onclick="cashOutBomber()"
+                disabled
+            >
+                💰 Cash Out
+            </button>
+
+        </div>
+
+
+        <div class="bomber-info">
+
+            <div>
+                Bombs:
+                <strong id="bombCount">
+                    3
+                </strong>
+            </div>
+
+            <div>
+                Safe:
+                <strong id="safeCount">
+                    0
+                </strong>
+            </div>
+
+            <div>
+                Win:
+                <strong id="bomberWin">
+                    1 💎
+                </strong>
+            </div>
+
+            <div>
+                Multiplier:
+                <strong id="bomberMultiplier">
+                    1.00x
+                </strong>
+            </div>
+
+            <div
+                id="bomberStatus"
+                class="bomber-status"
+            >
+                READY
+            </div>
+
+        </div>
+
+
+        <div
+            id="bomberBoard"
+            class="bomber-board"
+        ></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CRASH / MULTIPLIER
+===================================================== -->
+
+<section
+    id="crash"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            📈 Multiplier
+        </h1>
+
+        <p>
+            Cash out before the crash!
+        </p>
+
+    </div>
+
+
+    <div class="crash-container">
+
+        <div class="crash-controls">
+
+            <label for="crashBet">
+                Bet 💎
+            </label>
+
+            <input
+                id="crashBet"
+                type="number"
+                min="1"
+                value="5"
+            >
+
+
+            <button
+                id="crashStartButton"
+                type="button"
+                onclick="startCrashGame()"
+            >
+                🚀 Start
+            </button>
+
+
+            <button
+                id="crashCashoutButton"
+                type="button"
+                onclick="cashOutCrash()"
+                disabled
+            >
+                💰 Cash Out
+            </button>
+
+        </div>
+
+
+        <div
+            id="crashStatus"
+            class="crash-status"
+        >
+            READY
+        </div>
+
+
+        <div class="crash-multiplier">
+
+            <strong id="crashMultiplier">
+                1.00x
+            </strong>
+
+        </div>
+
+
+        <div class="crash-info">
+
+            <div>
+                Step
+                <strong id="crashStep">
+                    0 / 10
+                </strong>
+            </div>
+
+            <div>
+                Bet
+                <strong id="crashCurrentBet">
+                    5.00 💎
+                </strong>
+            </div>
+
+            <div>
+                Potential Win
+                <strong id="crashPotentialWin">
+                    5.00 💎
+                </strong>
+            </div>
+
+            <div>
+                Wins
+                <strong id="crashWins">
+                    0
+                </strong>
+            </div>
+
+            <div>
+                Losses
+                <strong id="crashLosses">
+                    0
+                </strong>
+            </div>
+
+            <div>
+                Best
+                <strong id="crashBest">
+                    0.00x
+                </strong>
+            </div>
+
+            <div>
+                Games
+                <strong id="crashTotalGames">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div
+            id="crashGraph"
+            class="crash-graph"
+        ></div>
+
+
+        <div
+            id="crashHistory"
+            class="crash-history"
+        ></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     WALLET
+===================================================== -->
+
+<section
+    id="wallet"
+    class="page hidden"
+>
+
+    <div class="page-header">
+
+        <h1>
+            💳 Wallet
+        </h1>
+
+        <p>
+            Manage your rewards and withdrawals.
+        </p>
+
+    </div>
+
+
+    <div class="wallet-container">
+
+
+        <div class="wallet-card">
+
+            <span>
+                ⭐ Points
+            </span>
+
+            <strong id="walletPoints">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="wallet-card">
+
+            <span>
+                💎 Diamonds
+            </span>
+
+            <strong id="walletDiamonds">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="wallet-card">
+
+            <span>
+                💵 Value
+            </span>
+
+            <strong>
+                $<span id="walletDollarValue">0.00</span>
+            </strong>
+
+        </div>
+
+
+        <div class="wallet-card">
+
+            <h2>
+                ⭐ Convert Points
+            </h2>
+
+            <p>
+                1000 points = 1 diamond
+            </p>
+
+            <button
+                type="button"
+                class="auth-btn"
+                onclick="convertPointsToDiamonds()"
+            >
+                ⭐ Convert
+            </button>
+
+        </div>
+
+
+        <div class="wallet-card">
+
+            <h2>
+                📤 Withdraw
+            </h2>
+
+            <p>
+                Enter the amount of diamonds.
+            </p>
+
+
+            <div class="input-group">
+
+                <label for="withdrawDiamonds">
+                    Diamonds
+                </label>
+
+                <input
+                    id="withdrawDiamonds"
+                    type="number"
+                    min="1"
+                    value="1"
+                    oninput="updateWithdrawValue()"
+                >
+
+            </div>
+
+
+            <p>
+                Value:
+                $<strong id="withdrawDollarValue">
+                    1.00
+                </strong>
+            </p>
+
+
+            <div class="input-group">
+
+                <label for="withdrawName">
+                    Name
+                </label>
+
+                <input
+                    id="withdrawName"
+                    type="text"
+                    placeholder="Your name"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="withdrawCard">
+                    Card Number
+                </label>
+
+                <input
+                    id="withdrawCard"
+                    type="text"
+                    maxlength="19"
+                    placeholder="0000 0000 0000 0000"
+                    oninput="formatCardNumber(this)"
+                >
+
+            </div>
+
+
+            <button
+                type="button"
+                class="auth-btn"
+                onclick="createWithdrawalRequest()"
+            >
+                📤 Request Withdrawal
+            </button>
+
+        </div>
+
+
+        <div class="wallet-card">
+
+            <h2>
+                📋 Withdrawal History
+            </h2>
+
+            <div
+                id="withdrawalHistory"
+            ></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script src="game.js"></script>
+
 </body>
 </html>
