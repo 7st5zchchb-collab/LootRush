@@ -162,57 +162,57 @@ const coinShop = [
 
 const diamondShop = [
 
-    {
-        name: "50 Diamonds",
-        icon: "💎",
-        diamonds: 50,
-        oldPrice: 50,
-        price: 39.99,
-        type: "dollarDiamonds",
-        productId: "diamonds_50"
-    },
+  {
+    name: "50 Diamonds",
+    icon: "💎",
+    diamonds: 50,
+    oldPrice: 50,
+    price: 39.99,
+    type: "dollarDiamonds",
+    productId: "diamonds_50"
+  },
 
-    {
-        name: "100 Diamonds",
-        icon: "💎",
-        diamonds: 100,
-        oldPrice: 100,
-        price: 69.99,
-        type: "dollarDiamonds",
-        productId: "diamonds_100"
-    },
+  {
+    name: "100 Diamonds",
+    icon: "💎",
+    diamonds: 100,
+    oldPrice: 100,
+    price: 69.99,
+    type: "dollarDiamonds",
+    productId: "diamonds_100"
+  },
 
-    {
-        name: "250 Diamonds",
-        icon: "💎",
-        diamonds: 250,
-        oldPrice: 250,
-        price: 149.99,
-        type: "dollarDiamonds",
-        productId: "diamonds_250"
-    },
+  {
+    name: "250 Diamonds",
+    icon: "💎",
+    diamonds: 250,
+    oldPrice: 250,
+    price: 149.99,
+    type: "dollarDiamonds",
+    productId: "diamonds_250"
+  },
 
-    {
-        name: "500 Diamonds",
-        icon: "💎",
-        diamonds: 500,
-        oldPrice: 500,
-        price: 249.99,
-        type: "dollarDiamonds",
-        productId: "diamonds_500"
-    },
+  {
+    name: "500 Diamonds",
+    icon: "💎",
+    diamonds: 500,
+    oldPrice: 500,
+    price: 249.99,
+    type: "dollarDiamonds",
+    productId: "diamonds_500"
+  },
 
-    {
-        name: "1000 Diamonds",
-        icon: "💎",
-        diamonds: 1000,
-        oldPrice: 1000,
-        price: 399.99,
-        type: "dollarDiamonds",
-        productId: "diamonds_1000"
-    }
+  {
+    name: "1000 Diamonds",
+    icon: "💎",
+    diamonds: 1000,
+    oldPrice: 1000,
+    price: 399.99,
+    type: "dollarDiamonds",
+    productId: "diamonds_1000"
+  }
 
-];
+
 
 
 /* =====================================================
