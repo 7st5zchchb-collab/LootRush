@@ -95,6 +95,30 @@
 .main-button,#bomberStartButton,#crashStartButton { background:linear-gradient(135deg,#ff174f,#c5003b) !important; }
 #bomberCashoutButton,#crashCashoutButton { background:linear-gradient(135deg,#16d889,#079d60) !important; box-shadow:0 9px 25px rgba(22,216,137,.20),inset 0 1px rgba(255,255,255,.10); }
 
+/* Multiplier page: force its START/CASH OUT controls to match Bomber. */
+#crash .main-button,
+#crash #crashStartButton,
+#crash #crashCashoutButton {
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  min-height:46px !important;
+  min-width:170px !important;
+  padding:12px 22px !important;
+  border-radius:13px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  color:#fff !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+  background:linear-gradient(135deg,#ff174f,#c5003b) !important;
+  box-shadow:0 9px 25px rgba(255,23,79,.24),inset 0 1px rgba(255,255,255,.10) !important;
+}
+#crash #crashCashoutButton { background:linear-gradient(135deg,#16d889,#079d60) !important; box-shadow:0 9px 25px rgba(22,216,137,.20),inset 0 1px rgba(255,255,255,.10) !important; }
+#crash .main-button:hover:not(:disabled),#crash #crashStartButton:hover:not(:disabled),#crash #crashCashoutButton:hover:not(:disabled) { transform:translateY(-2px); filter:brightness(1.08); }
+
 .main-button:hover:not(:disabled),
 #bomberStartButton:hover:not(:disabled),
 #crashStartButton:hover:not(:disabled),
@@ -107,11 +131,9 @@
 .main-button:active:not(:disabled),#bomberStartButton:active:not(:disabled),#crashStartButton:active:not(:disabled),#bomberCashoutButton:active:not(:disabled),#crashCashoutButton:active:not(:disabled) { transform:translateY(1px) scale(.99); }
 .main-button:disabled,#bomberStartButton:disabled,#crashStartButton:disabled,#bomberCashoutButton:disabled,#crashCashoutButton:disabled { filter:grayscale(.15); opacity:.48; box-shadow:none; }
 
-/* Navigation keeps its own transparent navigation design. */
 nav button { appearance:none; -webkit-appearance:none; background:transparent !important; color:#b9bac5 !important; }
 nav button:hover { color:#fff !important; background:rgba(255,255,255,.07) !important; }
 
-/* Profile Logout only. Other buttons are untouched. */
 .profile-dropdown > button:not(.player-avatar) {
   width:100%; display:block; box-sizing:border-box; padding:12px; margin:0;
   border:1px solid transparent; border-radius:10px; outline:none;
@@ -124,11 +146,9 @@ nav button:hover { color:#fff !important; background:rgba(255,255,255,.07) !impo
 .profile-dropdown > button:not(.player-avatar):active { transform:translateX(0) scale(.99); }
 .profile-dropdown > button:not(.player-avatar):focus-visible { outline:2px solid rgba(255,23,79,.65); outline-offset:2px; }
 
-/* Selects */
 #bomberBombSelector,select { appearance:none; -webkit-appearance:none; min-height:44px; padding:10px 38px 10px 14px; border:1px solid rgba(255,255,255,.10); border-radius:12px; outline:none; color:#fff; background:#15151d; font:inherit; font-weight:700; cursor:pointer; }
 #bomberBombSelector:focus,select:focus { border-color:rgba(255,23,79,.55); box-shadow:0 0 0 3px rgba(255,23,79,.10); }
 
-/* Final scroll override: prevents the older body overflow:hidden rule from clipping Shop. */
 html,body { min-height:100%; overflow-x:hidden !important; overflow-y:auto !important; }
 body { display:block !important; align-items:initial !important; justify-content:initial !important; }
 
