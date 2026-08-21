@@ -1924,104 +1924,88 @@ function handleRegister() {
 ===================================================== */
 
 function handleLogin() {
+  const emailElement = document.getElementById("loginEmail");
+  const passwordElement = document.getElementById("loginPassword");
 
-  const emailElement =
-    document.getElementById(
-      "loginEmail"
-    );
-
-  const passwordElement =
-    document.getElementById(
-      "loginPassword"
-    );
-
-
-  if (
-    !emailElement ||
-    !passwordElement
-  ) {
-
-    showMessage(
-      "❌ Login form not found."
-    );
-
+  if (!emailElement || !passwordElement) {
+    showMessage("❌ Login form not found.");
     return;
   }
 
+  const email = emailElement.value.trim();
+  const password = passwordElement.value;
 
-  const email =
-    emailElement.value.trim();
-
-  const password =
-    passwordElement.value;
-
-
-  if (
-    !email ||
-    !password
-  ) {
-
-    showMessage(
-      "❌ Enter email and password."
-    );
-
+  if (!email || !password) {
+    showMessage("❌ Enter email and password.");
     return;
   }
-
 
   const savedEmail =
-    localStorage.getItem(
-      "registeredEmail"
-    );
+    localStorage.getItem("registeredEmail");
 
   const savedPassword =
-    localStorage.getItem(
-      "registeredPassword"
-    );
+    localStorage.getItem("registeredPassword");
 
   const savedUsername =
-    localStorage.getItem(
-      "registeredUsername"
-    );
+    localStorage.getItem("registeredUsername");
 
-
-  if (
-    !savedEmail ||
-    !savedPassword
-  ) {
-
+  if (!savedEmail || !savedPassword) {
     showMessage(
       "❌ No account found. Please register first."
     );
-
     return;
   }
-
 
   if (
     email.toLowerCase() !==
     savedEmail.toLowerCase()
   ) {
-
-    showMessage(
-      "❌ Wrong email or password."
-    );
-
+    showMessage("❌ Wrong email or password.");
     return;
   }
 
-
-  if (
-    password !==
-    savedPassword
-  ) {
-
-    showMessage(
-      "❌ Wrong email or password."
-    );
-
+  if (password !== savedPassword) {
+    showMessage("❌ Wrong email or password.");
     return;
   }
+
+  // ================================
+  // LOGIN SUCCESS
+  // ================================
+
+  localStorage.setItem("loggedIn", "true");
+
+  // Հին auth համակարգի հետ կոնֆլիկտը կանխելու համար
+  localStorage.setItem("lootRushLoggedIn", "true");
+
+  playerName = savedUsername || "Guest";
+
+  localStorage.setItem(
+    "playerName",
+    playerName
+  );
+
+  updateProfile();
+
+  const overlay =
+    document.getElementById("authOverlay");
+
+  if (overlay) {
+    overlay.classList.add("hidden");
+
+    // Եթե CSS-ը .hidden-ը ճիշտ չի աշխատեցնում
+    overlay.style.display = "none";
+  }
+
+  passwordElement.value = "";
+
+  updateAllUI();
+  saveGame();
+
+  showMessage(
+    `✅ Welcome ${playerName}!`
+  );
+}
 
 
   /* LOGIN SUCCESS */
