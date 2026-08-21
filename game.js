@@ -1834,16 +1834,12 @@ function handleRegister() {
   }
 
 
-  if (
-    password.length < 4
-  ) {
-
+  if (password.length < 6) {
     showMessage(
-      "❌ Password must be at least 4 characters."
+        "❌ Password must be at least 6 characters."
     );
-
     return;
-  }
+}
 
 
   /*
