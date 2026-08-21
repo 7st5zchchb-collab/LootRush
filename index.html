@@ -66,12 +66,9 @@
 
                 Don't have an account?
 
-                <a
-                    href="#"
-                    onclick="switchAuthForm('register'); return false;"
-                >
-                    Register here
-                </a>
+              <a href="#" onclick="event.preventDefault(); switchAuthForm('register');">
+    Register here
+</a>
 
             </p>
 
