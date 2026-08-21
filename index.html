@@ -137,10 +137,7 @@
 
                 Already have an account?
 
-                <a
-                    href="#"
-                    onclick="switchAuthForm('login'); return false;"
-                >
+                <a href="#" onclick="event.preventDefault(); switchAuthForm('login');">
                     Sign in
                 </a>
 
