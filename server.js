@@ -1,57 +1,213 @@
 require("dotenv").config();
+
 const express = require("express");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
-const path = require("path");
+const Stripe = require("stripe");
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
-app.use(express.json());
+const stripe = Stripe(
+    process.env.STRIPE_SECRET_KEY
+);
 
-// Սա 100%-ով ճիշտ կմիացնի նույն թղթապանակում գտնվող բոլոր JS և CSS ֆայլերը
-app.use(express.static(__dirname));
+const PORT =
+    process.env.PORT || 10000;
 
 
-// Բացում ենք index.html-ը գլխավոր էջում
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+/* =====================================================
+   MIDDLEWARE
+===================================================== */
 
-// Stripe Checkout Session
-app.post("/create-checkout-session", async (req, res) => {
-  try {
-    const { itemName, price, currencyType } = req.body;
-    if (!itemName || !price) {
-      return res.status(400).json({ error: "Missing product information" });
+app.use(
+    cors({
+        origin: true
+    })
+);
+
+app.use(
+    express.json()
+);
+
+
+/* =====================================================
+   PRODUCTS
+===================================================== */
+
+const PRODUCTS = {
+
+    diamonds_50: {
+        name: "50 Diamonds",
+        diamonds: 50,
+        price: 3999
+    },
+
+    diamonds_100: {
+        name: "100 Diamonds",
+        diamonds: 100,
+        price: 6999
+    },
+
+    diamonds_250: {
+        name: "250 Diamonds",
+        diamonds: 250,
+        price: 14999
+    },
+
+    diamonds_500: {
+        name: "500 Diamonds",
+        diamonds: 500,
+        price: 24999
+    },
+
+    diamonds_1000: {
+        name: "1000 Diamonds",
+        diamonds: 1000,
+        price: 39999
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [{
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: itemName,
-            description: `Purchase for LootRush Game (${currencyType || "In-game item"})`,
-          },
-          unit_amount: Math.round(price * 100),
-        },
-        quantity: 1,
-      }],
-      mode: "payment",
-      success_url: `${process.env.CLIENT_URL}?payment=success&item=${encodeURIComponent(itemName)}`,
-      cancel_url: `${process.env.CLIENT_URL}?payment=cancel`,
-    });
+};
 
-    res.json({ id: session.id, url: session.url });
-  } catch (error) {
-    console.error("Stripe error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`LootRush server running on port ${PORT}`);
-});
+/* =====================================================
+   HEALTH CHECK
+===================================================== */
+
+app.get(
+    "/",
+    (req, res) => {
+
+        res.json({
+            status: "ok",
+            service: "LootRush Stripe Server"
+        });
+
+    }
+);
+
+
+/* =====================================================
+   CREATE STRIPE CHECKOUT
+===================================================== */
+
+app.post(
+    "/create-checkout-session",
+    async (req, res) => {
+
+        try {
+
+            const {
+                productId
+            } = req.body;
+
+            const product =
+                PRODUCTS[productId];
+
+            if (!product) {
+
+                return res.status(400).json({
+                    error:
+                        "Invalid product."
+                });
+
+            }
+
+
+            const baseUrl =
+                process.env.FRONTEND_URL ||
+                "https://7st5zchchb-collab.github.io/LootRush";
+
+
+            const session =
+                await stripe.checkout.sessions.create({
+
+                    mode: "payment",
+
+                    line_items: [
+
+                        {
+
+                            price_data: {
+
+                                currency: "usd",
+
+                                product_data: {
+
+                                    name:
+                                        product.name,
+
+                                    description:
+                                        `${product.diamonds} Diamonds for LootRush`
+
+                                },
+
+                                unit_amount:
+                                    product.price
+
+                            },
+
+                            quantity: 1
+
+                        }
+
+                    ],
+
+                    success_url:
+                        `${baseUrl}/?payment=success&diamonds=${product.diamonds}`,
+
+                    cancel_url:
+                        `${baseUrl}/?payment=cancel`,
+
+                    metadata: {
+
+                        productId:
+                            productId,
+
+                        diamonds:
+                            String(
+                                product.diamonds
+                            )
+
+                    }
+
+                });
+
+
+            res.json({
+                url: session.url
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Stripe error:",
+                error
+            );
+
+            res.status(500).json({
+
+                error:
+                    "Could not create Stripe Checkout session."
+
+            });
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   START SERVER
+===================================================== */
+
+app.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `LootRush Stripe server running on port ${PORT}`
+        );
+
+    }
+);
