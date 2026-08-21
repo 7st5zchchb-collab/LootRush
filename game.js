@@ -211,7 +211,7 @@ const diamondShop = [
     type: "dollarDiamonds",
     productId: "diamonds_1000"
   }
-
+];
 
 
 
