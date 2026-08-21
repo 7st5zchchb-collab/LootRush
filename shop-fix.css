@@ -2,12 +2,11 @@
    LOOTRUSH SHOP LAYOUT FIX
    ===================================================== */
 
-/* Shop sections stay separated and cards sit side-by-side. */
 #shop .page-card {
   width: 100%;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 28px 28px 90px;
+  padding: 28px 28px 120px;
   min-height: calc(100vh - 78px);
   overflow: visible !important;
 }
@@ -28,16 +27,9 @@
 }
 
 #shop .shop-grid .item {
-  width: 100%;
-  min-width: 0;
-  min-height: 250px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  padding: 22px 18px;
-  border-radius: 18px;
+  width: 100%; min-width: 0; min-height: 250px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  text-align: center; padding: 22px 18px; border-radius: 18px;
   background: linear-gradient(145deg, rgba(30,30,42,.96), rgba(12,12,18,.96));
   border: 1px solid rgba(255,255,255,.09);
   box-shadow: 0 14px 35px rgba(0,0,0,.28), inset 0 0 20px rgba(255,255,255,.018);
@@ -46,83 +38,100 @@
 }
 
 #shop .shop-grid .item:hover { transform: translateY(-5px); border-color: rgba(255,23,79,.32); box-shadow: 0 18px 42px rgba(0,0,0,.38), 0 0 25px rgba(255,23,79,.07); }
-
-#shop .shop-grid .item .item-icon {
-  width: 76px; height: 76px; flex: 0 0 76px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 14px; border-radius: 18px;
-  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08);
-  font-size: 38px;
-}
-
-#shop .shop-grid .item h2 { width: 100%; margin: 0 0 10px; font-size: 19px; line-height: 1.25; color: #fff; }
-#shop .shop-grid .item p { margin: 6px 0 10px; color: #a7a8b5; }
-#shop .shop-grid .item strong { display: block; margin: 4px 0 12px; font-size: 17px; line-height: 1.3; }
+#shop .shop-grid .item .item-icon { width:76px; height:76px; flex:0 0 76px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; border-radius:18px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); font-size:38px; }
+#shop .shop-grid .item h2 { width:100%; margin:0 0 10px; font-size:19px; line-height:1.25; color:#fff; }
+#shop .shop-grid .item p { margin:6px 0 10px; color:#a7a8b5; }
+#shop .shop-grid .item strong { display:block; margin:4px 0 12px; font-size:17px; line-height:1.3; }
 
 #shop .buy-button {
-  width: 100%; max-width: 190px; min-height: 44px; margin-top: auto; padding: 11px 18px;
-  border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
-  background: linear-gradient(135deg, #ff174f, #c5003b) !important;
-  color: #fff !important; font-size: 14px; font-weight: 800; line-height: 1;
-  text-transform: uppercase; box-shadow: 0 8px 22px rgba(255,23,79,.22);
-  opacity: 1 !important; appearance: none; -webkit-appearance: none;
-  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  width:100%; max-width:190px; min-height:44px; margin-top:auto; padding:11px 18px;
+  border:1px solid rgba(255,255,255,.08); border-radius:12px;
+  background:linear-gradient(135deg,#ff174f,#c5003b) !important; color:#fff !important;
+  font-size:14px; font-weight:800; line-height:1; text-transform:uppercase;
+  box-shadow:0 8px 22px rgba(255,23,79,.22); opacity:1 !important;
+  appearance:none; -webkit-appearance:none; transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
 }
-
-#shop .buy-button:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 12px 28px rgba(255,23,79,.34); }
-#shop .buy-button:active { transform: translateY(0); }
-
-#shop .diamond-price { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 28px; margin-bottom: 3px; flex-wrap: wrap; }
-#shop .diamond-price .old-price { color: #777887; text-decoration: line-through; font-size: 13px; }
-#shop .diamond-price .new-price { color: #55d9ff; font-size: 20px; font-weight: 900; }
-#shop .coin-shop-section .item .item-icon { box-shadow: inset 0 0 22px rgba(0,255,170,.05); }
-#shop .diamond-shop-section .item .item-icon { box-shadow: inset 0 0 22px rgba(0,190,255,.08); }
-
-#shop { min-height: calc(100vh - 78px); height: auto !important; max-height: none !important; overflow: visible !important; }
-#shop .page-card, #shop .shop-section, #shop .coin-shop-section, #shop .diamond-shop-section { height: auto !important; max-height: none !important; overflow: visible !important; }
+#shop .buy-button:hover { transform:translateY(-2px); filter:brightness(1.08); box-shadow:0 12px 28px rgba(255,23,79,.34); }
+#shop .buy-button:active { transform:translateY(0); }
+#shop .diamond-price { display:flex; align-items:center; justify-content:center; gap:9px; min-height:28px; margin-bottom:3px; flex-wrap:wrap; }
+#shop .diamond-price .old-price { color:#777887; text-decoration:line-through; font-size:13px; }
+#shop .diamond-price .new-price { color:#55d9ff; font-size:20px; font-weight:900; }
+#shop .coin-shop-section .item .item-icon { box-shadow:inset 0 0 22px rgba(0,255,170,.05); }
+#shop .diamond-shop-section .item .item-icon { box-shadow:inset 0 0 22px rgba(0,190,255,.08); }
+#shop { min-height:calc(100vh - 78px); height:auto !important; max-height:none !important; overflow:visible !important; }
+#shop .page-card,#shop .shop-section,#shop .coin-shop-section,#shop .diamond-shop-section { height:auto !important; max-height:none !important; overflow:visible !important; }
 
 /* =====================================================
-   PROFILE / LOG OUT BUTTON
-   The HTML uses a plain button inside .profile-dropdown,
-   so give ONLY that button the LootRush profile style.
+   ALL ACTION BUTTONS - CONSISTENT LOOTRUSH STYLE
    ===================================================== */
+
+.main-button,
+#bomberStartButton,
+#crashStartButton,
+#bomberCashoutButton,
+#crashCashoutButton {
+  appearance:none;
+  -webkit-appearance:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:46px;
+  min-width:170px;
+  padding:12px 22px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:13px;
+  outline:none;
+  color:#fff !important;
+  font:inherit;
+  font-size:14px;
+  font-weight:900;
+  line-height:1.1;
+  cursor:pointer;
+  box-shadow:0 9px 25px rgba(255,23,79,.24),inset 0 1px rgba(255,255,255,.10);
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,opacity .18s ease;
+}
+
+.main-button,#bomberStartButton,#crashStartButton { background:linear-gradient(135deg,#ff174f,#c5003b) !important; }
+#bomberCashoutButton,#crashCashoutButton { background:linear-gradient(135deg,#16d889,#079d60) !important; box-shadow:0 9px 25px rgba(22,216,137,.20),inset 0 1px rgba(255,255,255,.10); }
+
+.main-button:hover:not(:disabled),
+#bomberStartButton:hover:not(:disabled),
+#crashStartButton:hover:not(:disabled),
+#bomberCashoutButton:hover:not(:disabled),
+#crashCashoutButton:hover:not(:disabled) {
+  transform:translateY(-2px); filter:brightness(1.08);
+  box-shadow:0 13px 32px rgba(255,23,79,.36),0 0 18px rgba(255,23,79,.10);
+}
+#bomberCashoutButton:hover:not(:disabled),#crashCashoutButton:hover:not(:disabled) { box-shadow:0 13px 32px rgba(22,216,137,.30),0 0 18px rgba(22,216,137,.10); }
+.main-button:active:not(:disabled),#bomberStartButton:active:not(:disabled),#crashStartButton:active:not(:disabled),#bomberCashoutButton:active:not(:disabled),#crashCashoutButton:active:not(:disabled) { transform:translateY(1px) scale(.99); }
+.main-button:disabled,#bomberStartButton:disabled,#crashStartButton:disabled,#bomberCashoutButton:disabled,#crashCashoutButton:disabled { filter:grayscale(.15); opacity:.48; box-shadow:none; }
+
+/* Navigation keeps its own transparent navigation design. */
+nav button { appearance:none; -webkit-appearance:none; background:transparent !important; color:#b9bac5 !important; }
+nav button:hover { color:#fff !important; background:rgba(255,255,255,.07) !important; }
+
+/* Profile Logout only. Other buttons are untouched. */
 .profile-dropdown > button:not(.player-avatar) {
-  width: 100%;
-  display: block;
-  box-sizing: border-box;
-  padding: 12px;
-  margin: 0;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  outline: none;
-  background: transparent;
-  color: #ff5578;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: left;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  box-shadow: none;
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
+  width:100%; display:block; box-sizing:border-box; padding:12px; margin:0;
+  border:1px solid transparent; border-radius:10px; outline:none;
+  background:rgba(255,23,79,.055) !important; color:#ff5578 !important;
+  font-family:inherit; font-size:14px; font-weight:700; line-height:1.2;
+  text-align:left; cursor:pointer; appearance:none; -webkit-appearance:none;
+  box-shadow:none; transition:background .2s ease,color .2s ease,border-color .2s ease,transform .18s ease;
 }
+.profile-dropdown > button:not(.player-avatar):hover { transform:translateX(2px); background:rgba(255,23,79,.14) !important; color:#fff !important; border-color:rgba(255,23,79,.28); }
+.profile-dropdown > button:not(.player-avatar):active { transform:translateX(0) scale(.99); }
+.profile-dropdown > button:not(.player-avatar):focus-visible { outline:2px solid rgba(255,23,79,.65); outline-offset:2px; }
 
-.profile-dropdown > button:not(.player-avatar):hover {
-  background: rgba(255, 23, 79, 0.12);
-  color: #ffffff;
-  border-color: rgba(255, 23, 79, 0.16);
-}
+/* Selects */
+#bomberBombSelector,select { appearance:none; -webkit-appearance:none; min-height:44px; padding:10px 38px 10px 14px; border:1px solid rgba(255,255,255,.10); border-radius:12px; outline:none; color:#fff; background:#15151d; font:inherit; font-weight:700; cursor:pointer; }
+#bomberBombSelector:focus,select:focus { border-color:rgba(255,23,79,.55); box-shadow:0 0 0 3px rgba(255,23,79,.10); }
 
-.profile-dropdown > button:not(.player-avatar):focus-visible {
-  outline: 2px solid rgba(255, 23, 79, .65);
-  outline-offset: 2px;
-}
+/* Final scroll override: prevents the older body overflow:hidden rule from clipping Shop. */
+html,body { min-height:100%; overflow-x:hidden !important; overflow-y:auto !important; }
+body { display:block !important; align-items:initial !important; justify-content:initial !important; }
 
-@media (max-width: 900px) { #shop .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) {
-  #shop .page-card { padding: 18px 12px 70px; }
-  #shop .shop-grid { grid-template-columns: 1fr; gap: 14px; }
-  #shop .shop-grid .item { min-height: 230px; }
-}
+@media (max-width:900px) { #shop .shop-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px) { #shop .page-card { padding:18px 12px 100px; } #shop .shop-grid { grid-template-columns:1fr; gap:14px; } #shop .shop-grid .item { min-height:230px; } }
+@media (max-width:700px) { .main-button,#bomberStartButton,#crashStartButton,#bomberCashoutButton,#crashCashoutButton { width:100%; min-width:0; } }
