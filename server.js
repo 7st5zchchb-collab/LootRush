@@ -14,17 +14,32 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "";
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://7st5zchchb-collab.github.io/LootRush";
 
-// Server is allowed to boot without Stripe variables so Login/Register can work.
-// Stripe endpoints return a clear configuration error until Stripe is configured.
 if (!DATABASE_URL || !SESSION_SECRET) {
   console.error("❌ Render configuration missing: DATABASE_URL and SESSION_SECRET are required.");
-  console.error("   Add them in Render → Environment, then redeploy.");
 }
 
 const stripe = STRIPE_SECRET_KEY ? Stripe(STRIPE_SECRET_KEY) : null;
-const pool = DATABASE_URL
-  ? new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  : null;
+const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } }) : null;
+
+// =====================================================
+// REAL-TIME LIVE WINNERS (SSE)
+// =====================================================
+const liveClients = new Set();
+const recentWins = [];
+const MAX_RECENT_WINS = 30;
+
+function broadcastWin(win) {
+  const payload = `data: ${JSON.stringify(win)}\n\n`;
+  for (const client of liveClients) {
+    try { client.res.write(payload); } catch { liveClients.delete(client); }
+  }
+}
+
+function rememberWin(win) {
+  recentWins.unshift(win);
+  if (recentWins.length > MAX_RECENT_WINS) recentWins.length = MAX_RECENT_WINS;
+  broadcastWin(win);
+}
 
 const PRODUCTS = {
   diamonds_50: { name: "50 Diamonds", diamonds: 50, priceCents: 3999 },
@@ -41,36 +56,23 @@ app.use(cors({
 }));
 
 function requireDatabase(res) {
-  if (!pool) {
-    res.status(503).json({ error: "Server database is not configured. Add DATABASE_URL in Render." });
-    return false;
-  }
+  if (!pool) { res.status(503).json({ error: "Server database is not configured. Add DATABASE_URL in Render." }); return false; }
   return true;
 }
 function requireSessionSecret(res) {
-  if (!SESSION_SECRET) {
-    res.status(503).json({ error: "Server session is not configured. Add SESSION_SECRET in Render." });
-    return false;
-  }
+  if (!SESSION_SECRET) { res.status(503).json({ error: "Server session is not configured. Add SESSION_SECRET in Render." }); return false; }
   return true;
 }
 function requireStripe(res) {
-  if (!stripe) {
-    res.status(503).json({ error: "Stripe is not configured. Add STRIPE_SECRET_KEY in Render." });
-    return false;
-  }
+  if (!stripe) { res.status(503).json({ error: "Stripe is not configured. Add STRIPE_SECRET_KEY in Render." }); return false; }
   return true;
 }
 
 app.post("/stripe-webhook", express.raw({ type: "application/json" }), async (req, res) => {
   if (!stripe || !STRIPE_WEBHOOK_SECRET || !pool) return res.status(503).send("Stripe webhook is not configured");
   let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error("❌ Invalid Stripe webhook signature:", err.message);
-    return res.status(400).send("Invalid signature");
-  }
+  try { event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], STRIPE_WEBHOOK_SECRET); }
+  catch (err) { console.error("❌ Invalid Stripe webhook signature:", err.message); return res.status(400).send("Invalid signature"); }
   try {
     if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object;
@@ -91,16 +93,11 @@ app.post("/stripe-webhook", express.raw({ type: "application/json" }), async (re
           await client.query("INSERT INTO payments (stripe_payment_id,account_id,product_id,diamonds,amount_cents,currency) VALUES ($1,$2,$3,$4,$5,$6)", [paymentId, accountId, productId, product.diamonds, session.amount_total || product.priceCents, session.currency || "usd"]);
         }
         await client.query("COMMIT");
-      } catch (e) {
-        await client.query("ROLLBACK");
-        throw e;
-      } finally { client.release(); }
+      } catch (e) { await client.query("ROLLBACK"); throw e; }
+      finally { client.release(); }
     }
     return res.json({ received: true });
-  } catch (err) {
-    console.error("❌ Webhook processing error:", err);
-    return res.status(500).send("Webhook processing failed");
-  }
+  } catch (err) { console.error("❌ Webhook processing error:", err); return res.status(500).send("Webhook processing failed"); }
 });
 
 app.use(express.json());
@@ -131,26 +128,64 @@ function getAccountId(req) {
   if (!payload || !sig) return null;
   const expected = crypto.createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
-  try {
-    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return data.exp > Date.now() ? data.id : null;
-  } catch { return null; }
+  try { const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")); return data.exp > Date.now() ? data.id : null; }
+  catch { return null; }
 }
 
-// Serve the LootRush frontend from this same Render service.
-// This makes https://lootrush-2.onrender.com/ open index.html instead of the server JSON.
-app.use(express.static(path.join(__dirname), { index: "index.html" }));
+// =====================================================
+// LIVE WINNERS API
+// =====================================================
+app.get("/api/wins/stream", (req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no"
+  });
+  res.write(`data: ${JSON.stringify({ type: "snapshot", wins: recentWins, online: liveClients.size })}\n\n`);
+  const client = { res };
+  liveClients.add(client);
+  res.write(`data: ${JSON.stringify({ type: "online", online: liveClients.size })}\n\n`);
+  const heartbeat = setInterval(() => { try { res.write(": heartbeat\n\n"); } catch {} }, 20000);
+  const close = () => { clearInterval(heartbeat); liveClients.delete(client); };
+  req.on("close", close);
+  res.on("close", close);
+});
 
+app.get("/api/online", (req, res) => res.json({ success: true, online: liveClients.size }));
+
+app.post("/api/wins", async (req, res) => {
+  if (!requireDatabase(res) || !requireSessionSecret(res)) return;
+  const accountId = getAccountId(req);
+  if (!accountId) return res.status(401).json({ error: "Login required." });
+  try {
+    const user = await pool.query("SELECT id,username FROM users WHERE id=$1", [accountId]);
+    if (user.rowCount !== 1) return res.status(401).json({ error: "Account not found." });
+    const game = String(req.body.game || "").trim().slice(0, 30);
+    const amount = Number(req.body.amount);
+    const currency = String(req.body.currency || "💎").slice(0, 4);
+    if (!game || !Number.isFinite(amount) || amount <= 0 || amount > 1000000) return res.status(400).json({ error: "Invalid win." });
+    const win = {
+      id: crypto.randomUUID(),
+      username: user.rows[0].username,
+      game,
+      amount: Number(amount.toFixed(2)),
+      currency,
+      createdAt: Date.now()
+    };
+    rememberWin(win);
+    res.json({ success: true, win });
+  } catch (err) { console.error("Live win error:", err); res.status(500).json({ error: "Unable to publish win." }); }
+});
+
+// Serve the LootRush frontend from this same Render service.
+app.use(express.static(path.join(__dirname), { index: "index.html" }));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/health", async (req, res) => {
   const checks = { database: Boolean(pool), session: Boolean(SESSION_SECRET), stripe: Boolean(stripe), webhook: Boolean(STRIPE_WEBHOOK_SECRET) };
   if (!pool) return res.status(503).json({ success:false, status:"unhealthy", checks });
-  try {
-    await pool.query("SELECT 1");
-    res.json({ success:true, status:"healthy", checks });
-  } catch (err) {
-    res.status(503).json({ success:false, status:"unhealthy", checks, error:"Database connection failed" });
-  }
+  try { await pool.query("SELECT 1"); res.json({ success:true, status:"healthy", checks }); }
+  catch (err) { res.status(503).json({ success:false, status:"unhealthy", checks, error:"Database connection failed" }); }
 });
 
 app.post("/register", async (req, res) => {
@@ -163,10 +198,7 @@ app.post("/register", async (req, res) => {
     const hash = await hashPassword(password);
     const r = await pool.query("INSERT INTO users (username,email,password_hash) VALUES ($1,$2,$3) RETURNING id,username,email,coins,diamonds,points", [username,email,hash]);
     res.json({ success:true, user:r.rows[0] });
-  } catch (err) {
-    if (err.code === "23505") return res.status(409).json({ error:"Email already registered." });
-    console.error(err); res.status(500).json({ error:"Registration failed." });
-  }
+  } catch (err) { if (err.code === "23505") return res.status(409).json({ error:"Email already registered." }); console.error(err); res.status(500).json({ error:"Registration failed." }); }
 });
 
 app.post("/login", async (req, res) => {
@@ -185,11 +217,8 @@ app.get("/me", async (req, res) => {
   if (!requireDatabase(res) || !requireSessionSecret(res)) return;
   const id = getAccountId(req);
   if (!id) return res.status(401).json({ error:"Unauthorized" });
-  try {
-    const r = await pool.query("SELECT id,username,email,coins,diamonds,points FROM users WHERE id=$1", [id]);
-    if (r.rowCount !== 1) return res.status(401).json({ error:"Account not found" });
-    res.json({ success:true, user:r.rows[0] });
-  } catch { res.status(500).json({ error:"Unable to load account." }); }
+  try { const r = await pool.query("SELECT id,username,email,coins,diamonds,points FROM users WHERE id=$1", [id]); if (r.rowCount !== 1) return res.status(401).json({ error:"Account not found" }); res.json({ success:true, user:r.rows[0] }); }
+  catch { res.status(500).json({ error:"Unable to load account." }); }
 });
 
 app.post("/create-checkout-session", async (req, res) => {
@@ -202,14 +231,7 @@ app.post("/create-checkout-session", async (req, res) => {
     if (!product) return res.status(400).json({ error:"Unknown product." });
     const account = await pool.query("SELECT email FROM users WHERE id=$1", [accountId]);
     if (account.rowCount !== 1) return res.status(401).json({ error:"Account not found." });
-    const session = await stripe.checkout.sessions.create({
-      mode:"payment", payment_method_types:["card"],
-      line_items:[{ price_data:{ currency:"usd", product_data:{name:product.name,description:`${product.diamonds} LootRush Diamonds`}, unit_amount:product.priceCents }, quantity:1 }],
-      customer_email:account.rows[0].email,
-      success_url:`${FRONTEND_URL}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:`${FRONTEND_URL}/?payment=cancel`,
-      metadata:{ accountId:String(accountId), productId }
-    });
+    const session = await stripe.checkout.sessions.create({ mode:"payment", payment_method_types:["card"], line_items:[{ price_data:{ currency:"usd", product_data:{name:product.name,description:`${product.diamonds} LootRush Diamonds`}, unit_amount:product.priceCents }, quantity:1 }], customer_email:account.rows[0].email, success_url:`${FRONTEND_URL}/?payment=success&session_id={CHECKOUT_SESSION_ID}`, cancel_url:`${FRONTEND_URL}/?payment=cancel`, metadata:{ accountId:String(accountId), productId } });
     res.json({ success:true, url:session.url });
   } catch (err) { console.error(err); res.status(500).json({ error:"Unable to create checkout session." }); }
 });
