@@ -1,0 +1,12 @@
+/* Header coin balance icon */
+.currency-box .currency.coins::before{
+  content:'💵' !important;
+  margin-right:4px !important;
+  font-size:14px !important;
+}
+.currency-box .currency.coins{
+  font-size:0 !important;
+}
+.currency-box .currency.coins span{
+  font-size:14px !important;
+}
