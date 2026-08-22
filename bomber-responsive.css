@@ -1,0 +1,5 @@
+/* Bomber keeps one consistent game shape on desktop and mobile. */
+.bomber-board{width:min(100%,520px);margin:18px auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;aspect-ratio:1/1;}
+.bomber-board button,.bomber-board .bomber-cell{min-width:0;min-height:0;aspect-ratio:1/1;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.bomber-replay-button{width:100%;max-width:520px;margin:10px auto 0;}
+@media(max-width:768px){.bomber-board{width:min(100%,420px);gap:6px;margin:14px auto;}.bomber-board button,.bomber-board .bomber-cell{font-size:clamp(16px,6vw,28px);}.bomber-replay-button{min-height:44px;}}
