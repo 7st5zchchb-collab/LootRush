@@ -1,0 +1,19 @@
+name: LootRush Render Keep Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render server
+        run: |
+          curl --fail --silent --show-error --max-time 30 \
+            -H 'User-Agent: LootRush-GitHub-KeepAlive/1.0' \
+            'https://lootrush-2.onrender.com/health' \
+            || curl --fail --silent --show-error --max-time 30 \
+            -H 'User-Agent: LootRush-GitHub-KeepAlive/1.0' \
+            'https://lootrush-2.onrender.com/'
