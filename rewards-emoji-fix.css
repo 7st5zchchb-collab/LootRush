@@ -1,0 +1,29 @@
+/* Rewards emoji visibility fix */
+#rewards .mission-icon,
+#rewards .skin-icon,
+#rewards .reward-drop-grid span,
+#rewards .reward-drop-grid b,
+#rewards button,
+#rewards h1,
+#rewards h2,
+#rewards h3,
+#rewards strong,
+#rewards small {
+  color: inherit;
+  -webkit-text-fill-color: initial;
+}
+#rewards .mission-icon,
+#rewards .skin-icon {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  background-color: rgba(255,255,255,.07) !important;
+}
+#rewards .reward-drop-grid span {
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+}
+#rewards .reward-drop-grid b {
+  color:#9f91ff !important;
+  -webkit-text-fill-color:#9f91ff !important;
+}
