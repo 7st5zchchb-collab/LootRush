@@ -7,28 +7,33 @@ function loadPersistence(){
 function setup(){
  loadPersistence();
  const page=document.getElementById('bomber'); if(!page)return;
- let replay=document.getElementById('bomberReplayButton');
  const start=document.getElementById('bomberStartButton');
  const cash=document.getElementById('bomberCashoutButton');
- if(!replay){
-  replay=document.createElement('button'); replay.id='bomberReplayButton'; replay.className='main-button bomber-replay-button'; replay.type='button'; replay.textContent='🔄 PLAY AGAIN'; replay.style.display='none';
-  if(cash)cash.insertAdjacentElement('afterend',replay);else page.querySelector('.page-card')?.appendChild(replay);
-  replay.addEventListener('click',()=>{
-   replay.style.display='none';
-   if(start){start.disabled=false;start.removeAttribute('disabled');start.style.display='block';}
-   if(cash){cash.disabled=true;cash.setAttribute('disabled','');}
-   if(typeof window.startBomberGame==='function')window.startBomberGame();
-  });
- }
- const status=document.getElementById('bomberStatus');
- const text=(status?.textContent||'').trim().toUpperCase();
- const active=typeof window.bomberGameActive!=='undefined'?window.bomberGameActive:false;
- const finished=!active && text!=='READY' && /WIN|WON|LOST|LOSE|BUST|CASH|GAME OVER|SAFE|BOMB/.test(text);
- if(finished){
-   replay.style.display='block';
-   if(start)start.style.display='none';
+ if(start) start.style.display='block';
+ if(cash && typeof window.bomberGameActive!=='undefined' && !window.bomberGameActive){
+   cash.disabled=true; cash.setAttribute('disabled','');
  }
 }
-function watch(){setup();const s=document.getElementById('bomberStatus');if(s&&!s.__bw){s.__bw=true;new MutationObserver(setup).observe(s,{childList:true,subtree:true,characterData:true);}}
-document.addEventListener('DOMContentLoaded',watch);window.addEventListener('load',watch);setInterval(watch,500);
+function forceStartReady(){
+ const start=document.getElementById('bomberStartButton');
+ const cash=document.getElementById('bomberCashoutButton');
+ if(start){start.disabled=false;start.removeAttribute('disabled');start.style.display='block';}
+ if(cash){cash.disabled=true;cash.setAttribute('disabled','');}
+}
+function wrapCashOut(){
+ if(typeof window.cashOutBomber!=='function' || window.cashOutBomber.__lootWrapped)return;
+ const original=window.cashOutBomber;
+ function wrappedCashOut(){
+   const result=original.apply(this,arguments);
+   setTimeout(forceStartReady,0);
+   setTimeout(forceStartReady,100);
+   return result;
+ }
+ wrappedCashOut.__lootWrapped=true;
+ window.cashOutBomber=wrappedCashOut;
+}
+function watch(){setup();wrapCashOut();}
+document.addEventListener('DOMContentLoaded',watch);
+window.addEventListener('load',watch);
+setInterval(watch,250);
 })();
