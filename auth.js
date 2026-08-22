@@ -4,6 +4,18 @@
 // =====================================================
 const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
 
+// Prevent the login/register overlay from flashing on every refresh.
+// If a saved session exists, hide it immediately; the server check below
+// will show it again only if the session is actually invalid.
+(function hideAuthOverlayForSavedSession() {
+  try {
+    if (localStorage.getItem("lootRushToken")) {
+      const overlay = document.getElementById("authOverlay");
+      if (overlay) overlay.classList.add("hidden");
+    }
+  } catch (_) {}
+})();
+
 function showMessage(text) {
   const message = document.getElementById("message");
   if (!message) return;
@@ -89,7 +101,7 @@ async function refreshServerUser() {
 function checkAuth(loggedIn) {
   const overlay = document.getElementById("authOverlay");
   if (!overlay) return;
-  overlay.classList.toggle("hidden", loggedIn === true);
+  overlay.classList.toggle("hidden", loggedIn !== true);
 }
 
 async function handleRegister() {
