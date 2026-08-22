@@ -1,0 +1,33 @@
+/* Hide the large LR logo from the main Game hero without affecting the layout. */
+#game .hero-logo-wrap,
+#game .hero-logo-wrap .hero-logo,
+#game picture.hero-logo-wrap {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+#game .game-hero {
+  grid-template-columns: 1fr !important;
+}
+
+#game .hero-copy {
+  grid-column: 1 !important;
+  justify-self: center !important;
+}
+
+@media (max-width: 700px) {
+  #game .game-hero {
+    display: flex !important;
+  }
+
+  #game .hero-copy {
+    width: 100% !important;
+  }
+}
