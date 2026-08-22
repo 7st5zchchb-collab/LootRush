@@ -32,6 +32,7 @@ const coinShop = [
 ];
 
 const diamondShop = [
+ {name:"1 Diamond",icon:"💎",diamonds:1,oldPrice:1,price:0.99,type:"dollarDiamonds",productId:"diamonds_1"},
  {name:"10 Diamonds",icon:"💎",diamonds:10,oldPrice:10,price:9,type:"dollarDiamonds",productId:"diamonds_10"},
  {name:"50 Diamonds",icon:"💎",diamonds:50,oldPrice:50,price:39.99,type:"dollarDiamonds",productId:"diamonds_50"},
  {name:"100 Diamonds",icon:"💎",diamonds:100,oldPrice:100,price:69.99,type:"dollarDiamonds",productId:"diamonds_100"},
