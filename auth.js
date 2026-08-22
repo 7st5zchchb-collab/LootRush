@@ -4,18 +4,6 @@
 // =====================================================
 const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
 
-// Prevent the login/register overlay from flashing on every refresh.
-// If a saved session exists, hide it immediately; the server check below
-// will show it again only if the session is actually invalid.
-(function hideAuthOverlayForSavedSession() {
-  try {
-    if (localStorage.getItem("lootRushToken")) {
-      const overlay = document.getElementById("authOverlay");
-      if (overlay) overlay.classList.add("hidden");
-    }
-  } catch (_) {}
-})();
-
 function showMessage(text) {
   const message = document.getElementById("message");
   if (!message) return;
@@ -34,14 +22,8 @@ function switchAuthForm(form) {
   registerForm.classList.toggle("hidden", !register);
 }
 
-function getToken() {
-  return localStorage.getItem("lootRushToken") || "";
-}
-
-function getUser() {
-  try { return JSON.parse(localStorage.getItem("lootRushUser")) || null; }
-  catch { return null; }
-}
+function getToken() { return localStorage.getItem("lootRushToken") || ""; }
+function getUser() { try { return JSON.parse(localStorage.getItem("lootRushUser")) || null; } catch { return null; } }
 
 function setSession(data) {
   localStorage.setItem("lootRushToken", data.token);
@@ -57,16 +39,12 @@ function setSession(data) {
 function applyServerUser(user) {
   localStorage.setItem("lootRushUser", JSON.stringify(user));
   localStorage.setItem("playerName", user.username);
-
-  // These values are only a UI cache. The server/database remains authoritative.
   if (typeof coins !== "undefined") coins = Number(user.coins) || 0;
   if (typeof diamonds !== "undefined") diamonds = Number(user.diamonds) || 0;
   if (typeof points !== "undefined") points = Number(user.points) || 0;
-
   localStorage.setItem("coins", String(user.coins ?? 0));
   localStorage.setItem("diamonds", String(user.diamonds ?? 0));
   localStorage.setItem("points", String(user.points ?? 0));
-
   const name = document.getElementById("playerNameTop");
   if (name) name.textContent = user.username;
   if (typeof updateAllUI === "function") updateAllUI();
@@ -75,18 +53,11 @@ function applyServerUser(user) {
 async function refreshServerUser() {
   const token = getToken();
   if (!token) return false;
-
   try {
-    const response = await fetch(`${LOOTRUSH_SERVER}/me`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store"
-    });
-
+    const response = await fetch(`${LOOTRUSH_SERVER}/me`, { method: "GET", headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
     if (!response.ok) throw new Error("Session expired");
     const data = await response.json();
     if (!data.success || !data.user) throw new Error("Invalid account response");
-
     applyServerUser(data.user);
     return true;
   } catch (error) {
@@ -101,96 +72,76 @@ async function refreshServerUser() {
 function checkAuth(loggedIn) {
   const overlay = document.getElementById("authOverlay");
   if (!overlay) return;
-  overlay.classList.toggle("hidden", loggedIn !== true);
+  // IMPORTANT: Login/Register is never opened automatically.
+  // It is shown only after an explicit user action.
+  if (loggedIn === true) overlay.classList.add("hidden");
+}
+
+function openAuth(form = "login") {
+  const overlay = document.getElementById("authOverlay");
+  if (!overlay) return;
+  switchAuthForm(form);
+  overlay.classList.remove("hidden");
 }
 
 async function handleRegister() {
   const username = document.getElementById("regUsername")?.value.trim() || "";
   const email = document.getElementById("regEmail")?.value.trim().toLowerCase() || "";
   const password = document.getElementById("regPassword")?.value || "";
-
   if (username.length < 3) return showMessage("❌ Username must be at least 3 characters.");
   if (!email || !email.includes("@")) return showMessage("❌ Enter a valid email.");
   if (password.length < 6) return showMessage("❌ Password must be at least 6 characters.");
-
   try {
-    const response = await fetch(`${LOOTRUSH_SERVER}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password })
-    });
+    const response = await fetch(`${LOOTRUSH_SERVER}/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, email, password }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Registration failed.");
-
     document.getElementById("loginEmail").value = email;
     document.getElementById("loginPassword").value = "";
     switchAuthForm("login");
     showMessage("✅ Account created. Now sign in.");
-  } catch (error) {
-    showMessage(`❌ ${error.message}`);
-  }
+  } catch (error) { showMessage(`❌ ${error.message}`); }
 }
 
 async function handleLogin() {
   const email = document.getElementById("loginEmail")?.value.trim().toLowerCase() || "";
   const password = document.getElementById("loginPassword")?.value || "";
-
   if (!email || !password) return showMessage("❌ Enter email and password.");
-
   try {
     showMessage("⏳ Signing in...");
-    const response = await fetch(`${LOOTRUSH_SERVER}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
+    const response = await fetch(`${LOOTRUSH_SERVER}/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.token || !data.user) {
-      throw new Error(data.error || "Wrong email or password.");
-    }
-
+    if (!response.ok || !data.token || !data.user) throw new Error(data.error || "Wrong email or password.");
     setSession(data);
     applyServerUser(data.user);
     checkAuth(true);
-
-    // Always start from the Game page after a successful login.
     if (typeof showPage === "function") showPage("game");
     showMessage(`✅ Welcome ${data.user.username}!`);
-  } catch (error) {
-    console.error(error);
-    checkAuth(false);
-    showMessage(`❌ ${error.message}`);
-  }
+  } catch (error) { console.error(error); showMessage(`❌ ${error.message}`); }
 }
 
 function logout() {
   localStorage.removeItem("lootRushToken");
   localStorage.setItem("lootRushLoggedIn", "false");
   localStorage.setItem("loggedIn", "false");
-  checkAuth(false);
+  // Do not automatically open Login after logout.
+  const overlay = document.getElementById("authOverlay");
+  if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
-  document.getElementById("loginPassword")?.focus();
 }
 
 function isLoggedIn() { return Boolean(getToken()); }
 function register() { return handleRegister(); }
 function login() { return handleLogin(); }
-function showRegister() { switchAuthForm("register"); }
-function showLogin() { switchAuthForm("login"); }
+function showRegister() { openAuth("register"); }
+function showLogin() { openAuth("login"); }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  // Never show auth automatically on page load, even for guests.
+  const overlay = document.getElementById("authOverlay");
+  if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
   const token = getToken();
-
-  if (!token) {
-    checkAuth(false);
-    return;
-  }
-
+  if (!token) return;
   const ok = await refreshServerUser();
-  checkAuth(ok);
-
-  if (ok && typeof showPage === "function") {
-    showPage("game");
-  }
+  if (ok && typeof showPage === "function") showPage("game");
 });
