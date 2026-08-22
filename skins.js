@@ -1,6 +1,5 @@
 /* =====================================================
    LOOTRUSH - SHOP SKINS ONLY
-   Isolated from game loot/items and Rewards.
 ===================================================== */
 (function () {
   const SKINS = [
@@ -28,7 +27,7 @@
   }
   function renderShopSkins(){
     const box=document.getElementById("coinShopItems");if(!box)return;const owned=ownedSkins();
-    box.innerHTML=SKINS.map(s=>`<div class="shop-item skin-shop-item"><div class="shop-item-visual" style="background:${s.visual}"><span class="skin-glow">${s.icon}</span></div><div class="skin-shop-body"><h3>${s.name}</h3><p>Limited player skin</p><strong>${s.price.toLocaleString()} 🪙</strong><button class="main-button skin-buy-btn" data-shop-skin="${s.name}">${owned.includes(s.name)?"EQUIP":"BUY"}</button></div></div>`).join("");
+    box.innerHTML=SKINS.map(s=>`<div class="shop-item skin-shop-item"><div class="shop-item-visual" style="background:${s.visual}"><span class="skin-glow">${s.icon}</span></div><div class="skin-shop-body"><h3>${s.name}</h3><p>Limited player skin</p><strong>${s.price.toLocaleString()} 💵</strong><button class="main-button skin-buy-btn" data-shop-skin="${s.name}">${owned.includes(s.name)?"EQUIP":"BUY"}</button></div></div>`).join("");
     box.querySelectorAll("[data-shop-skin]").forEach(b=>b.onclick=()=>buyLootRushSkin(b.dataset.shopSkin));
   }
   window.buyLootRushSkin=buyLootRushSkin;window.renderLootRushShopSkins=renderShopSkins;document.addEventListener("DOMContentLoaded",renderShopSkins);
