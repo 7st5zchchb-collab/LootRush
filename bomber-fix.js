@@ -1,6 +1,11 @@
-/* Bomber reliability + instant replay fix. */
+/* Bomber reliability + instant replay + persistent balance loader. */
 (function(){
+function loadPersistence(){
+ if(document.querySelector('script[data-lootrush-persistence]'))return;
+ const s=document.createElement('script');s.src='progress-persistence.js';s.dataset.lootrushPersistence='1';document.head.appendChild(s);
+}
 function setup(){
+ loadPersistence();
  const page=document.getElementById('bomber'); if(!page)return;
  let replay=document.getElementById('bomberReplayButton');
  if(!replay){
@@ -12,6 +17,6 @@ function setup(){
  const active=typeof window.bomberGameActive!=='undefined'?window.bomberGameActive:false;
  if(!active&&text!=='READY'&&/WIN|LOST|LOSE|BUST|CASH|GAME|SAFE|BOMB/.test(text))replay.style.display='block';
 }
-function watch(){setup();const s=document.getElementById('bomberStatus');if(s&&!s.__bw){s.__bw=true;new MutationObserver(setup).observe(s,{childList:true,subtree:true,characterData:true});}}
+function watch(){setup();const s=document.getElementById('bomberStatus');if(s&&!s.__bw){s.__bw=true;new MutationObserver(setup).observe(s,{childList:true,subtree:true,characterData:true);}}
 document.addEventListener('DOMContentLoaded',watch);window.addEventListener('load',watch);setInterval(watch,500);
 })();
