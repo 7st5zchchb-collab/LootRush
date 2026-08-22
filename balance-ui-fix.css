@@ -1,0 +1,13 @@
+/* LootRush balance UI */
+.currency-box{display:flex!important;align-items:center!important;gap:8px!important}
+.currency{display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:70px!important;box-sizing:border-box!important}
+.currency.coins::before{content:'💵';font-size:17px}
+.currency.diamonds::before{content:'💎';font-size:17px}
+.currency.points::before{content:'LVL';font-size:11px;font-weight:800;letter-spacing:.5px}
+@media(max-width:768px){
+.currency-box{gap:5px!important;max-width:calc(100vw - 110px);overflow:hidden}
+.currency{min-width:58px!important;padding:7px 6px!important}
+.currency.points{display:flex!important;min-width:58px!important}
+.currency.points::before{font-size:10px!important}
+.currency.coins::before,.currency.diamonds::before{font-size:15px!important}
+}
