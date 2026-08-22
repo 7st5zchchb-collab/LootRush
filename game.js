@@ -11,7 +11,7 @@ const STRIPE_SERVER_URL =
 ===================================================== */
 
 let coins =
-    Number(localStorage.getItem("coins")) || 150;
+    Number(localStorage.getItem("coins")) || 200;
 
 let diamonds =
     Number(localStorage.getItem("diamonds")) || 0;
@@ -316,6 +316,11 @@ function saveGame() {
     );
 
     localStorage.setItem(
+        "playerAvatar",
+        playerAvatar
+    );
+
+    localStorage.setItem(
         "currentSkin",
         currentSkin
     );
@@ -524,7 +529,7 @@ function getRandomLoot() {
 
 function rollLoot() {
 
-    const cost = 150;
+    const cost = 100;
 
     if (coins < cost) {
 
