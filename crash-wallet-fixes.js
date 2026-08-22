@@ -5,8 +5,6 @@
 (function () {
   "use strict";
 
-  // Prevent a running Crash game from paying twice and make the
-  // bet/payout state explicit.
   window.startCrashGame = function () {
     if (crashGameActive) return;
 
@@ -134,4 +132,34 @@
     saveGame();
     showMessage("📤 Withdrawal request sent.");
   };
+
+  // =====================================================
+  // WALLET EMOJI CLEANUP
+  // Keep the emoji beside the wallet label only.
+  // Remove any duplicate emoji that another script puts
+  // inside the numeric value itself.
+  // =====================================================
+  function cleanWalletValue(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.textContent = el.textContent
+      .replace(/[⭐💎💵🪙🤑]/gu, "")
+      .trim();
+  }
+
+  function cleanWalletEmojis() {
+    cleanWalletValue("walletPoints");
+    cleanWalletValue("walletDiamonds");
+    cleanWalletValue("walletDollarValue");
+  }
+
+  // Run after the page is ready and also after any script updates
+  // the wallet values.
+  window.addEventListener("DOMContentLoaded", cleanWalletEmojis);
+  setTimeout(cleanWalletEmojis, 0);
+  setTimeout(cleanWalletEmojis, 100);
+  setTimeout(cleanWalletEmojis, 500);
+  setTimeout(cleanWalletEmojis, 1000);
+  setInterval(cleanWalletEmojis, 500);
 })();
