@@ -1,6 +1,6 @@
 /* LootRush - Real Live Wins + Online + Interactive Recent Wins */
 (function(){
-  const SERVER='https://lootrush-2.onrender.com'; let source=null;
+  const SERVER='https://lootrush.7st5zchchb.workers.dev'; let source=null;
   const token=()=>localStorage.getItem('lootRushToken')||'';
   const safe=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=n=>Number.isInteger(Number(n))?String(Number(n)):Number(n||0).toFixed(2);
@@ -11,7 +11,7 @@
   function online(n){const e=document.getElementById('liveOnlineCount');if(e)e.textContent=n?` • ${n} ONLINE`:''}
   function bigWin(x){let e=document.getElementById('bigWinPopup');if(!e){e=document.createElement('div');e.id='bigWinPopup';document.body.appendChild(e)}e.innerHTML=`<div class="big-win-glow">🏆</div><div><small>BIG WIN</small><strong>${safe(x.username||'Player')}</strong><span>${safe(x.game||'Game')} · +${fmt(x.amount)} ${safe(x.currency||'💎')}</span></div>`;e.classList.remove('show');void e.offsetWidth;e.classList.add('show');clearTimeout(window.__bigWinTimer);window.__bigWinTimer=setTimeout(()=>e.classList.remove('show'),3500)}
   function connect(){ensure();if(source)source.close();source=new EventSource(`${SERVER}/api/wins/stream`);source.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.type==='snapshot'){snapshot(d.wins);online(d.online)}else if(d.type==='online')online(d.online);else if(d.username)render(d,true)}catch(err){console.warn('Live feed error',err)}};source.onerror=()=>{source.close();setTimeout(connect,5000)}}
-  async function publish(game,amount,currency='💎'){const t=token(),n=Number(amount);if(!t||!Number.isFinite(n)||n<=0)return;try{await fetch(`${SERVER}/api/wins`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${t}`},body:JSON.stringify({game,amount:n,currency})})}catch(e){console.warn('win publish failed',e)}}
+  async function publish(game,amount,currency='💎'){const t=token(),n=Number(amount);if(!t||!Number.isFinite(n)||n<=0)return;try{await fetch(`${SERVER}/api/wins`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${t}`},body:JSON.stringify({game,amount:n,currency}),cache:'no-store'})}catch(e){console.warn('win publish failed',e)}}
   const coins=()=>Number(localStorage.getItem('coins'))||0,diamonds=()=>Number(localStorage.getItem('diamonds'))||0;
   function progressWin(rare){if(typeof window.lootRushTrackWin==='function')window.lootRushTrackWin(!!rare)}
   function wrap(){if(window.__liveWinsWrapped)return;window.__liveWinsWrapped=true;const r=window.rollLoot;if(typeof r==='function')window.rollLoot=function(){const c=coins(),d=diamonds(),t=Number(localStorage.getItem('totalRolls'))||0,z=r.apply(this,arguments),nt=Number(localStorage.getItem('totalRolls'))||0;if(nt>t){const dc=coins()-c,dd=diamonds()-d;if(dc>0||dd>0){publish('🎲 Roll',dc>0?dc:dd,dc>0?'💵':'💎');progressWin(dd>0)}}return z};const b=window.cashOutBomber;if(typeof b==='function')window.cashOutBomber=function(){const d=diamonds(),z=b.apply(this,arguments),g=diamonds()-d;if(g>0){publish('💣 Bomber',g,'💎');progressWin(false)}return z};const c=window.cashOutCrash;if(typeof c==='function')window.cashOutCrash=function(){const d=diamonds(),z=c.apply(this,arguments),g=diamonds()-d;if(g>0){publish('📈 Multiplier',g,'💎');progressWin(false)}return z}}
