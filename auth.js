@@ -1,7 +1,9 @@
 // =====================================================
 // LOOTRUSH SERVER AUTH + EMAIL VERIFICATION
 // =====================================================
-const LOOTRUSH_SERVER = String(window.LOOTRUSH_API_URL || "https://lootrush-2.onrender.com").replace(/\/$/, "");
+// All auth requests go through the deployed Cloudflare Worker.
+// The Worker proxies them securely to the existing Render backend.
+const LOOTRUSH_SERVER = String(window.LOOTRUSH_API_URL || "https://lootrush.7st5zchchb.workers.dev").replace(/\/$/, "");
 let authBusy = false;
 
 function showMessage(text) {
@@ -124,6 +126,7 @@ async function handleRegister() {
     switchAuthForm("login");
     showMessage("📧 Check your email and click Verify Email before signing in.");
   } catch (error) {
+    console.error(error);
     showMessage(`❌ ${error.message || "Registration failed."}`);
   } finally {
     authBusy = false;
