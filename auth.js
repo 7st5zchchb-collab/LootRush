@@ -1,9 +1,8 @@
 // =====================================================
 // LOOTRUSH SERVER AUTH + EMAIL VERIFICATION
 // =====================================================
-// All auth requests go through the deployed Cloudflare Worker.
-// The Worker proxies them securely to the existing Render backend.
-const LOOTRUSH_SERVER = String(window.LOOTRUSH_API_URL || "https://lootrush.7st5zchchb.workers.dev").replace(/\/$/, "");
+// The site is served directly by the Render backend. No Cloudflare Worker is needed.
+const LOOTRUSH_SERVER = String(window.LOOTRUSH_API_URL || "https://lootrush-2.onrender.com").replace(/\/$/, "");
 let authBusy = false;
 
 function showMessage(text) {
