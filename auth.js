@@ -62,18 +62,21 @@ async function refreshServerUser() {
     return true;
   } catch (error) {
     console.warn("LootRush session check failed:", error);
-    localStorage.removeItem("lootRushToken");
-    localStorage.setItem("lootRushLoggedIn", "false");
-    localStorage.setItem("loggedIn", "false");
+    clearSession();
     return false;
   }
+}
+
+function clearSession() {
+  localStorage.removeItem("lootRushToken");
+  localStorage.removeItem("lootRushUser");
+  localStorage.setItem("lootRushLoggedIn", "false");
+  localStorage.setItem("loggedIn", "false");
 }
 
 function checkAuth(loggedIn) {
   const overlay = document.getElementById("authOverlay");
   if (!overlay) return;
-  // IMPORTANT: Login/Register is never opened automatically.
-  // It is shown only after an explicit user action.
   if (loggedIn === true) overlay.classList.add("hidden");
 }
 
@@ -120,13 +123,24 @@ async function handleLogin() {
 }
 
 function logout() {
-  localStorage.removeItem("lootRushToken");
-  localStorage.setItem("lootRushLoggedIn", "false");
-  localStorage.setItem("loggedIn", "false");
-  // Do not automatically open Login after logout.
-  const overlay = document.getElementById("authOverlay");
-  if (overlay) overlay.classList.add("hidden");
+  // Fully end the local session and return to the login screen.
+  clearSession();
   switchAuthForm("login");
+
+  const overlay = document.getElementById("authOverlay");
+  if (overlay) {
+    overlay.classList.remove("hidden");
+    overlay.classList.add("show-auth");
+  }
+
+  const dropdown = document.getElementById("profileDropdown");
+  if (dropdown) dropdown.classList.remove("show");
+
+  // Reset visible profile information.
+  const name = document.getElementById("playerNameTop");
+  if (name) name.textContent = "Guest";
+
+  showMessage("✅ You have been logged out.");
 }
 
 function isLoggedIn() { return Boolean(getToken()); }
@@ -136,7 +150,6 @@ function showRegister() { openAuth("register"); }
 function showLogin() { openAuth("login"); }
 
 window.addEventListener("DOMContentLoaded", async () => {
-  // Never show auth automatically on page load, even for guests.
   const overlay = document.getElementById("authOverlay");
   if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
