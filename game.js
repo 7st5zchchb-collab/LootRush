@@ -1,7 +1,7 @@
 /* =====================================================
    LOOTRUSH GAME.JS
 ===================================================== */
-const STRIPE_SERVER_URL = "https://lootrush-2.onrender.com";
+const STRIPE_SERVER_URL = "https://lootrush.7st5zchchb.workers.dev";
 
 let coins = Number(localStorage.getItem("coins")) || 200;
 let diamonds = Number(localStorage.getItem("diamonds")) || 0;
@@ -45,14 +45,35 @@ let bomberBombs=3,bomberBoard=[],bomberGameActive=false,bomberMultiplier=1,bombe
 let crashGameActive=false,crashBet=5,crashMultiplier=1,crashStep=0,crashMaxSteps=10,crashHistory=[];
 let crashWins=Number(localStorage.getItem("crashWins"))||0,crashLosses=Number(localStorage.getItem("crashLosses"))||0,crashTotalGames=Number(localStorage.getItem("crashTotalGames"))||0,crashBestMultiplier=Number(localStorage.getItem("crashBestMultiplier"))||0,crashTotalWon=Number(localStorage.getItem("crashTotalWon"))||0;
 
-document.addEventListener("DOMContentLoaded",()=>{updateAllUI();initShop();renderInventory();initBomber();initCrashGame();checkAuth();startRewardTimer();checkStripePayment();renderCrashHistory();setTimeout(ensureDiamondShopVisible,50);setInterval(saveGame,3000);});
-function saveGame(){localStorage.setItem("coins",coins);localStorage.setItem("diamonds",diamonds);localStorage.setItem("points",points);localStorage.setItem("totalRolls",totalRolls);localStorage.setItem("streak",streak);localStorage.setItem("bestStreak",bestStreak);localStorage.setItem("rareItems",rareItems);localStorage.setItem("inventory",JSON.stringify(inventory));localStorage.setItem("playerName",playerName);localStorage.setItem("playerAvatar",playerAvatar);localStorage.setItem("currentSkin",currentSkin);localStorage.setItem("crashWins",crashWins);localStorage.setItem("crashLosses",crashLosses);localStorage.setItem("crashTotalGames",crashTotalGames);localStorage.setItem("crashBestMultiplier",crashBestMultiplier);localStorage.setItem("crashTotalWon",crashTotalWon)}
-function updateAllUI(){updateCurrency();updateStats();updateProfile();updateSkin();updateWallet();updateBomberUI();updateCrashUI()}
+// Some older game modules call this before bomber-fix.js is initialized.
+// Keep it safe so one missing optional UI helper cannot stop all page scripts.
+if (typeof window.updateBomberUI !== "function") {
+  window.updateBomberUI = function () {
+    const bombCount=document.getElementById("bombCount");
+    const safe=document.getElementById("safeCount");
+    const mult=document.getElementById("bomberMultiplier");
+    if (bombCount) bombCount.textContent=typeof bomberBombs === "number" ? bomberBombs : 3;
+    if (safe) safe.textContent=typeof bomberSafeCount === "number" ? bomberSafeCount : 0;
+    if (mult) mult.textContent=(typeof bomberMultiplier === "number" ? bomberMultiplier : 1).toFixed(2)+"x";
+  };
+}
+
+function updateWallet(){
+  const c=document.getElementById("walletCoins");
+  const d=document.getElementById("walletDiamonds");
+  const p=document.getElementById("walletPoints");
+  if(c)c.textContent=Math.floor(coins);
+  if(d)d.textContent=Math.floor(diamonds);
+  if(p)p.textContent=Math.floor(points);
+}
+
+function updateAllUI(){updateCurrency();updateStats();updateProfile();updateSkin();updateWallet();if(typeof window.updateBomberUI==="function")window.updateBomberUI();if(typeof window.updateCrashUI==="function")window.updateCrashUI()}
 function updateCurrency(){const c=document.getElementById("coins"),d=document.getElementById("diamonds"),p=document.getElementById("points");if(c)c.textContent=Math.floor(coins);if(d)d.textContent=Math.floor(diamonds);if(p)p.textContent=Math.floor(points)}
 function updateStats(){const r=document.getElementById("rolls"),s=document.getElementById("streak"),x=document.getElementById("rareItems");if(r)r.textContent=totalRolls;if(s)s.textContent=bestStreak;if(x)x.textContent=rareItems}
 function updateProfile(){const n=document.getElementById("playerNameTop"),a=document.getElementById("playerAvatar");if(n)n.textContent=playerName;if(a)a.src=playerAvatar}
 function updateSkin(){document.body.classList.remove("skin-shadow","skin-fire","skin-ice");if(currentSkin&&currentSkin!=="Default")document.body.classList.add("skin-"+currentSkin.toLowerCase())}
-function showPage(pageId){document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));const page=document.getElementById(pageId);if(!page)return;page.classList.remove("hidden");if(pageId==="inventory")renderInventory();if(pageId==="wallet")updateWallet();if(pageId==="bomber")initBomber();if(pageId==="crash")initCrashGame();if(pageId==="shop")setTimeout(ensureDiamondShopVisible,0)}
+function saveGame(){localStorage.setItem("coins",coins);localStorage.setItem("diamonds",diamonds);localStorage.setItem("points",points);localStorage.setItem("totalRolls",totalRolls);localStorage.setItem("streak",streak);localStorage.setItem("bestStreak",bestStreak);localStorage.setItem("rareItems",rareItems);localStorage.setItem("inventory",JSON.stringify(inventory));localStorage.setItem("playerName",playerName);localStorage.setItem("playerAvatar",playerAvatar);localStorage.setItem("currentSkin",currentSkin);localStorage.setItem("crashWins",crashWins);localStorage.setItem("crashLosses",crashLosses);localStorage.setItem("crashTotalGames",crashTotalGames);localStorage.setItem("crashBestMultiplier",crashBestMultiplier);localStorage.setItem("crashTotalWon",crashTotalWon)}
+function showPage(pageId){document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));const page=document.getElementById(pageId);if(!page)return;page.classList.remove("hidden");if(pageId==="inventory")renderInventory();if(pageId==="wallet")updateWallet();if(pageId==="bomber"&&typeof initBomber==="function")initBomber();if(pageId==="crash"&&typeof initCrashGame==="function")initCrashGame();if(pageId==="shop")setTimeout(ensureDiamondShopVisible,0)}
 let messageTimer;function showMessage(text){const m=document.getElementById("message");if(!m){console.log(text);return}m.textContent=text;m.classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>m.classList.remove("show"),2500)}
 function getRandomLoot(){const random=Math.random()*100;let current=0;for(const item of loot){current+=item.chance;if(random<=current)return item}return loot[0]}
 function rollLoot(){const cost=100;if(coins<cost){showMessage("❌ Not enough coins!");return}coins-=cost;totalRolls++;const item=getRandomLoot();if(["RARE","EPIC","LEGENDARY","MYTHIC"].includes(item.rarity)){rareItems++;streak++;if(streak>bestStreak)bestStreak=streak}else streak=0;if(item.type==="coins")coins+=item.reward;if(item.type==="diamonds")diamonds+=item.reward;addInventoryItem(item);const r=document.getElementById("rarity"),i=document.getElementById("lootIcon"),n=document.getElementById("lootName"),d=document.getElementById("lootDescription"),w=document.getElementById("reward");if(r)r.textContent=item.rarity;if(i)i.textContent=item.icon;if(n)n.textContent=item.name;if(d)d.textContent=item.description;if(w)w.textContent=item.type==="coins"?`+${item.reward} 💵`:`+${item.reward} 💎`;updateAllUI();renderInventory();saveGame();showMessage(`🎉 You won ${item.name}!`)}
@@ -63,3 +84,5 @@ function renderShop(containerId,items){const c=document.getElementById(container
 function ensureDiamondShopVisible(){const shop=document.getElementById("shop"),section=document.getElementById("diamondShopItems");if(!shop||!section)return;section.classList.remove("hidden");section.removeAttribute("hidden");section.style.display="grid";section.style.visibility="visible";section.style.opacity="1";section.style.height="auto";section.style.maxHeight="none";section.style.overflow="visible";const title=[...shop.querySelectorAll(".shop-section-title")].find(x=>x.textContent.includes("Diamond"));const subtitle=[...shop.querySelectorAll(".shop-section-subtitle")].find(x=>x.textContent.includes("Diamonds"));if(title){title.style.display="block";title.style.visibility="visible"}if(subtitle){subtitle.style.display="block";subtitle.style.visibility="visible"}if(!section.children.length)renderShop("diamondShopItems",diamondShop)}
 async function buySkin(item){if(item.type==="coins"){if(coins<item.price){showMessage("❌ Not enough coins!");return}coins-=item.price;addInventoryItem({name:item.name,icon:item.icon,rarity:"SHOP"});if(item.skin)currentSkin=item.skin;updateAllUI();renderInventory();saveGame();showMessage(`✅ ${item.name} purchased!`);return}if(item.type==="dollarDiamonds"){await buyWithStripe(item);return}showMessage("❌ Unknown product.")}
 async function buyWithStripe(item){try{showMessage("⏳ Opening Stripe Checkout...");if(!item.productId){showMessage("❌ Product ID is missing.");return}const response=await fetch(`${STRIPE_SERVER_URL}/create-checkout-session`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:item.productId})});const data=await response.json();if(data.url)window.location.href=data.url;else showMessage(`❌ ${data.error||"Payment session could not be created."}`)}catch(error){console.error(error);showMessage("❌ Payment server is unavailable.")}}
+
+document.addEventListener("DOMContentLoaded",()=>{updateAllUI();if(typeof initShop==="function")initShop();renderInventory();if(typeof initBomber==="function")initBomber();if(typeof initCrashGame==="function")initCrashGame();if(typeof checkAuth==="function")checkAuth();if(typeof startRewardTimer==="function")startRewardTimer();if(typeof checkStripePayment==="function")checkStripePayment();if(typeof renderCrashHistory==="function")renderCrashHistory();setTimeout(ensureDiamondShopVisible,50);setInterval(saveGame,3000)});
