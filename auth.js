@@ -1,8 +1,10 @@
 // =====================================================
-// LOOTRUSH SERVER AUTH + EMAIL VERIFICATION
+// LOOTRUSH AUTH — RENDER ONLY
 // =====================================================
-// The site and API are served by the same Render service.
-// No Cloudflare Worker or separate frontend domain is used.
+// Register / Login / Refresh / /me / Logout use the same
+// Render origin. No Cloudflare API and no client-side email
+// verification step are used here.
+
 const LOOTRUSH_SERVER = "";
 let authBusy = false;
 
@@ -16,32 +18,40 @@ function showMessage(text) {
 }
 
 function switchAuthForm(form) {
-  const loginForm = document.getElementById("loginForm"), registerForm = document.getElementById("registerForm");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
   if (!loginForm || !registerForm) return;
   const register = form === "register";
   loginForm.classList.toggle("hidden", register);
   registerForm.classList.toggle("hidden", !register);
 }
 
-function getToken() { return localStorage.getItem("lootRushToken") || ""; }
-function getUser() { try { return JSON.parse(localStorage.getItem("lootRushUser")) || null; } catch { return null; } }
+function getToken() {
+  return localStorage.getItem("lootRushToken") || "";
+}
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem("lootRushUser")) || null; }
+  catch { return null; }
+}
 
 function setSession(data) {
-  if (!data?.token || !data?.user) return;
+  if (!data?.token || !data?.user) return false;
   localStorage.setItem("lootRushToken", data.token);
   localStorage.setItem("lootRushLoggedIn", "true");
   localStorage.setItem("loggedIn", "true");
   localStorage.setItem("lootRushUser", JSON.stringify(data.user));
-  localStorage.setItem("playerName", data.user.username);
+  localStorage.setItem("playerName", data.user.username || "Guest");
   localStorage.setItem("coins", String(data.user.coins ?? 150));
   localStorage.setItem("diamonds", String(data.user.diamonds ?? 0));
   localStorage.setItem("points", String(data.user.points ?? 0));
+  return true;
 }
 
 function applyServerUser(user) {
   if (!user) return;
   localStorage.setItem("lootRushUser", JSON.stringify(user));
-  localStorage.setItem("playerName", user.username);
+  localStorage.setItem("playerName", user.username || "Guest");
   if (typeof coins !== "undefined") coins = Number(user.coins) || 0;
   if (typeof diamonds !== "undefined") diamonds = Number(user.diamonds) || 0;
   if (typeof points !== "undefined") points = Number(user.points) || 0;
@@ -49,7 +59,7 @@ function applyServerUser(user) {
   localStorage.setItem("diamonds", String(user.diamonds ?? 0));
   localStorage.setItem("points", String(user.points ?? 0));
   const name = document.getElementById("playerNameTop");
-  if (name) name.textContent = user.username;
+  if (name) name.textContent = user.username || "Guest";
   if (typeof updateAllUI === "function") updateAllUI();
 }
 
@@ -104,13 +114,14 @@ async function handleRegister() {
   const username = document.getElementById("regUsername")?.value.trim() || "";
   const email = document.getElementById("regEmail")?.value.trim().toLowerCase() || "";
   const password = document.getElementById("regPassword")?.value || "";
+
   if (username.length < 3) return showMessage("❌ Username must be at least 3 characters.");
   if (!email || !email.includes("@")) return showMessage("❌ Enter a valid email.");
   if (password.length < 6) return showMessage("❌ Password must be at least 6 characters.");
 
   authBusy = true;
   try {
-    showMessage("⏳ Creating account and sending verification email...");
+    showMessage("⏳ Creating account...");
     const response = await fetch("/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -119,12 +130,25 @@ async function handleRegister() {
     });
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error || "Registration failed.");
+
+    // If the server returns a session, log in immediately.
+    if (data.token && data.user) {
+      setSession(data);
+      applyServerUser(data.user);
+      checkAuth(true);
+      if (typeof showPage === "function") showPage("game");
+      showMessage(`✅ Welcome ${data.user.username}!`);
+      return;
+    }
+
+    // Backward-compatible response: registration succeeded but the server
+    // did not return a token. Move to Login instead of asking for email.
     const loginEmail = document.getElementById("loginEmail");
     const loginPassword = document.getElementById("loginPassword");
     if (loginEmail) loginEmail.value = email;
     if (loginPassword) loginPassword.value = "";
     switchAuthForm("login");
-    showMessage("📧 Check your email and click Verify Email before signing in.");
+    showMessage("✅ Account created. You can now sign in.");
   } catch (error) {
     console.error(error);
     showMessage(`❌ ${error.message || "Registration failed."}`);
@@ -149,7 +173,9 @@ async function handleLogin() {
       cache: "no-store"
     });
     const data = await readJson(response);
-    if (!response.ok || !data.token || !data.user) throw new Error(data.error || "Wrong email or password.");
+    if (!response.ok || !data.token || !data.user) {
+      throw new Error(data.error || "Wrong email or password.");
+    }
     setSession(data);
     applyServerUser(data.user);
     checkAuth(true);
@@ -163,7 +189,9 @@ async function handleLogin() {
   }
 }
 
-function logout() {
+async function logout() {
+  // Authentication is bearer-token based, so logout is local token revocation.
+  // The token is discarded immediately and /me will no longer be called with it.
   clearSession();
   switchAuthForm("login");
   const overlay = document.getElementById("authOverlay");
@@ -189,23 +217,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
 
-  const params = new URLSearchParams(location.search);
-  const verification = params.get("verification");
-  const verifyToken = params.get("verify_email");
-
-  if (verifyToken) {
-    try {
-      const response = await fetch(`/verify-email?token=${encodeURIComponent(verifyToken)}`, { cache: "no-store" });
-      if (response.redirected) {
-        location.replace(response.url);
-        return;
-      }
-    } catch {}
-  }
-
-  if (verification === "success") showMessage("✅ Email verified! You can now sign in.");
-  if (verification === "invalid") showMessage("❌ Verification link is invalid or expired.");
-
+  // No email verification redirect/flow here.
   const token = getToken();
   if (!token) {
     openAuth("login");
@@ -213,6 +225,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   const ok = await refreshServerUser();
-  if (ok && typeof showPage === "function") showPage("game");
-  else openAuth("login");
+  if (ok && typeof showPage === "function") {
+    checkAuth(true);
+    showPage("game");
+  } else {
+    openAuth("login");
+  }
 });
