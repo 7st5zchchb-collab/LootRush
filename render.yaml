@@ -7,3 +7,6 @@ services:
     startCommand: npm start
     autoDeploy: true
     healthCheckPath: /health
+    envVars:
+      - key: FRONTEND_URL
+        value: https://lootrush-2.onrender.com
