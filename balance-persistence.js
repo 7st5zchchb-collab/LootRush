@@ -1,6 +1,6 @@
 /* LootRush account balance persistence: server is authoritative per user. */
 (function(){
-  const API=String(window.LOOTRUSH_API_URL || "https://lootrush-2.onrender.com").replace(/\/$/, "");
+  const API=String(window.LOOTRUSH_API_URL || "https://lootrush.7st5zchchb.workers.dev").replace(/\/$/, "");
   let lastSaved="";
   let saveTimer=0;
   let saving=false;
@@ -8,6 +8,22 @@
   function token(){return localStorage.getItem("lootRushToken")||""}
   function values(){return {coins:Math.max(0,Math.floor(Number(localStorage.getItem("coins"))||0)),diamonds:Math.max(0,Math.floor(Number(localStorage.getItem("diamonds"))||0)),points:Math.max(0,Math.floor(Number(localStorage.getItem("points"))||0))}}
   function key(v){return `${v.coins}:${v.diamonds}:${v.points}`}
+
+  function updateWallet(){
+    const p=document.getElementById("walletPoints");
+    const d=document.getElementById("walletDiamonds");
+    const v=document.getElementById("walletDollarValue");
+    const wd=document.getElementById("withdrawDiamonds");
+    const wv=document.getElementById("withdrawDollarValue");
+    const points=Math.max(0,Math.floor(Number(localStorage.getItem("points"))||0));
+    const diamonds=Math.max(0,Math.floor(Number(localStorage.getItem("diamonds"))||0));
+    if(p)p.textContent=points;
+    if(d)d.textContent=diamonds;
+    if(v)v.textContent=(diamonds*0.10).toFixed(2);
+    if(wd&&document.activeElement!==wd)wd.value=wd.value||"";
+    if(wv){const amount=Math.max(0,Number(wd?.value)||0);wv.textContent=(amount*0.10).toFixed(2)}
+  }
+  window.updateWallet=updateWallet;
 
   async function save(force=false){
     const t=token(); if(!t||saving)return;
@@ -47,19 +63,11 @@
     }catch(e){console.warn("Balance restore failed",e)}
   }
 
-  function scheduleSave(){
-    clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>save(false),1500);
-  }
-
+  function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(false),1500)}
   window.lootRushSaveBalance=save;
   window.lootRushRestoreBalance=restore;
   window.lootRushScheduleBalanceSave=scheduleSave;
-
-  window.addEventListener("DOMContentLoaded",()=>{
-    setTimeout(()=>restore(),900);
-    setInterval(()=>save(false),5000);
-  });
+  window.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>restore(),900);setInterval(()=>save(false),5000);setTimeout(updateWallet,0)});
   window.addEventListener("beforeunload",()=>save(true));
   document.addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?save(true):restore());
 })();
