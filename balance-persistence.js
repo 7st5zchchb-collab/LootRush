@@ -56,7 +56,10 @@
   window.lootRushRestoreBalance=restore;
   window.lootRushScheduleBalanceSave=scheduleSave;
 
-  window.addEventListener("DOMContentLoaded",()=>setTimeout(()=>restore(),900));
+  window.addEventListener("DOMContentLoaded",()=>{
+    setTimeout(()=>restore(),900);
+    setInterval(()=>save(false),5000);
+  });
   window.addEventListener("beforeunload",()=>save(true));
   document.addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?save(true):restore());
 })();
