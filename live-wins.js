@@ -1,6 +1,6 @@
 /* LootRush - Real Live Wins + Online + Interactive Recent Wins */
 (function(){
-  const SERVER='https://lootrush.7st5zchchb.workers.dev'; let source=null;
+  const SERVER='https://lootrush-2.onrender.com'; let source=null;
   const token=()=>localStorage.getItem('lootRushToken')||'';
   const safe=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=n=>Number.isInteger(Number(n))?String(Number(n)):Number(n||0).toFixed(2);
