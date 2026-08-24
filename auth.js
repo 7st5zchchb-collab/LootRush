@@ -1,8 +1,9 @@
 // =====================================================
 // LOOTRUSH SERVER AUTH + EMAIL VERIFICATION
 // =====================================================
-// The site is served directly by the Render backend. No Cloudflare Worker is needed.
-const LOOTRUSH_SERVER = String(window.LOOTRUSH_API_URL || "https://lootrush-2.onrender.com").replace(/\/$/, "");
+// The site and API are served by the same Render service.
+// No Cloudflare Worker or separate frontend domain is used.
+const LOOTRUSH_SERVER = "";
 let authBusy = false;
 
 function showMessage(text) {
@@ -67,7 +68,7 @@ async function refreshServerUser() {
   const token = getToken();
   if (!token) return false;
   try {
-    const response = await fetch(`${LOOTRUSH_SERVER}/me`, {
+    const response = await fetch("/me", {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store"
     });
@@ -110,7 +111,7 @@ async function handleRegister() {
   authBusy = true;
   try {
     showMessage("⏳ Creating account and sending verification email...");
-    const response = await fetch(`${LOOTRUSH_SERVER}/register`, {
+    const response = await fetch("/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -141,7 +142,7 @@ async function handleLogin() {
   authBusy = true;
   try {
     showMessage("⏳ Signing in...");
-    const response = await fetch(`${LOOTRUSH_SERVER}/login`, {
+    const response = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -194,7 +195,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (verifyToken) {
     try {
-      const response = await fetch(`${LOOTRUSH_SERVER}/verify-email?token=${encodeURIComponent(verifyToken)}`, { cache: "no-store" });
+      const response = await fetch(`/verify-email?token=${encodeURIComponent(verifyToken)}`, { cache: "no-store" });
       if (response.redirected) {
         location.replace(response.url);
         return;
