@@ -1,10 +1,24 @@
 // =====================================================
 // LOOTRUSH GAME FIXES
-// Loaded after game.js through auth.js.
 // =====================================================
 
 (function () {
   "use strict";
+
+  // Must exist before game.js DOMContentLoaded handlers run.
+  window.updateWallet = function () {
+    const points = Math.max(0, Math.floor(Number(localStorage.getItem("points")) || 0));
+    const diamonds = Math.max(0, Math.floor(Number(localStorage.getItem("diamonds")) || 0));
+    const p = document.getElementById("walletPoints");
+    const d = document.getElementById("walletDiamonds");
+    const v = document.getElementById("walletDollarValue");
+    const wd = document.getElementById("withdrawDiamonds");
+    const wv = document.getElementById("withdrawDollarValue");
+    if (p) p.textContent = points;
+    if (d) d.textContent = diamonds;
+    if (v) v.textContent = (diamonds * 0.10).toFixed(2);
+    if (wv) wv.textContent = (Math.max(0, Number(wd?.value) || 0) * 0.10).toFixed(2);
+  };
 
   window.startBomberGame = function () {
     if (typeof bomberGameActive !== "undefined" && bomberGameActive) return;
