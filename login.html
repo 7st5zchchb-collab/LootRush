@@ -1,221 +1,98 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LootRush - Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="register-page">
+  <div class="background"><div class="grid"></div><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
-    <title>LootRush - Login</title>
+  <div class="register-wrapper">
+    <div class="register-card">
+      <div class="logo"><h1>Loot<span>Rush</span></h1><p>Welcome back! Login to continue</p></div>
 
-    <link rel="stylesheet" href="style.css" />
-  </head>
-
-  <body class="register-page">
-
-    <!-- =========================
-         3D BACKGROUND
-    ========================= -->
-
-    <div class="background">
-      <div class="grid"></div>
-
-      <div class="orb orb1"></div>
-      <div class="orb orb2"></div>
-      <div class="orb orb3"></div>
-    </div>
-
-    <!-- =========================
-         LOGIN
-    ========================= -->
-
-    <div class="register-wrapper">
-      <div class="register-card">
-
-        <!-- LOGO -->
-
-        <div class="logo">
-          <h1>Loot<span>Rush</span></h1>
-
-          <p>Welcome back! Login to continue</p>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="loginUsername">Username</label>
+          <div class="input-box"><span class="input-icon"></span><input type="text" id="loginUsername" placeholder="Enter your username" autocomplete="username" required></div>
         </div>
 
-        <!-- LOGIN FORM -->
-
-        <form id="loginForm">
-
-          <!-- EMAIL -->
-
-          <div class="input-group">
-            <label for="loginEmail">
-              Email
-            </label>
-
-            <div class="input-box">
-              <span class="input-icon"></span>
-
-              <input
-                type="email"
-                id="loginEmail"
-                placeholder="Enter your email"
-                autocomplete="email"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- PASSWORD -->
-
-          <div class="input-group">
-            <label for="loginPassword">
-              Password
-            </label>
-
-            <div class="input-box">
-              <span class="input-icon"></span>
-
-              <input
-                type="password"
-                id="loginPassword"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- LOGIN BUTTON -->
-
-          <button
-            type="submit"
-            class="register-button"
-          >
-            🚀 Login
-          </button>
-
-        </form>
-
-        <!-- REGISTER -->
-
-        <div class="login-text">
-          Don't have an account?
-
-          <a href="register.html">
-            Register
-          </a>
+        <div class="input-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-box"><span class="input-icon"></span><input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required></div>
         </div>
 
-      </div>
+        <button type="submit" class="register-button">🚀 Login</button>
+      </form>
+
+      <div class="login-text">Don't have an account? <a href="register.html">Register</a></div>
     </div>
+  </div>
 
-    <!-- MESSAGE -->
+  <div id="message"></div>
 
-    <div id="message"></div>
+  <script>
+    const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
+    const loginForm = document.getElementById("loginForm");
+    const usernameInput = document.getElementById("loginUsername");
+    const passwordInput = document.getElementById("loginPassword");
+    const message = document.getElementById("message");
 
-    <!-- =========================
-         LOGIN SCRIPT
-    ========================= -->
+    function showMessage(text) {
+      message.textContent = text;
+      message.classList.add("show");
+      clearTimeout(window.__messageTimer);
+      window.__messageTimer = setTimeout(() => message.classList.remove("show"), 5000);
+    }
 
-    <script>
-      const loginForm = document.getElementById("loginForm");
-      const message = document.getElementById("message");
+    // Automatically restore the credentials from the immediately preceding Register.
+    const pendingUsername = sessionStorage.getItem("lootRushPendingUsername") || localStorage.getItem("lootRushPendingUsername") || "";
+    const pendingPassword = sessionStorage.getItem("lootRushPendingPassword") || "";
+    if (pendingUsername) usernameInput.value = pendingUsername;
+    if (pendingPassword) passwordInput.value = pendingPassword;
 
-      function showMessage(text) {
-        message.textContent = text;
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+      if (!username || !password) return showMessage("❌ Enter username and password.");
 
-        message.classList.add("show");
+      try {
+        showMessage("⏳ Signing in...");
+        const response = await fetch(`${LOOTRUSH_SERVER}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success || !data.token || !data.user) {
+          throw new Error(data.error || "Wrong username or password.");
+        }
 
-        setTimeout(function () {
-          message.classList.remove("show");
-        }, 2500);
+        localStorage.setItem("lootRushToken", data.token);
+        localStorage.setItem("lootRushLoggedIn", "true");
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("lootRushUser", JSON.stringify(data.user));
+        localStorage.setItem("playerName", data.user.username || "Guest");
+        localStorage.setItem("coins", String(data.user.coins ?? 150));
+        localStorage.setItem("diamonds", String(data.user.diamonds ?? 0));
+        localStorage.setItem("points", String(data.user.points ?? 0));
+
+        // Remove the temporary Register -> Login password immediately after use.
+        sessionStorage.removeItem("lootRushPendingPassword");
+        sessionStorage.removeItem("lootRushPendingUsername");
+        sessionStorage.removeItem("lootRushPendingEmail");
+        localStorage.removeItem("lootRushPendingUsername");
+
+        showMessage(`✅ Login successful! Welcome ${data.user.username}!`);
+        setTimeout(() => { window.location.href = "index.html"; }, 700);
+      } catch (error) {
+        console.error(error);
+        showMessage(`❌ ${error.message || "Login failed."}`);
       }
-
-      loginForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const email = document
-          .getElementById("loginEmail")
-          .value
-          .trim();
-
-        const password = document
-          .getElementById("loginPassword")
-          .value;
-
-        /* =========================
-           CHECK ACCOUNT
-        ========================= */
-
-        const savedUser =
-          localStorage.getItem("lootRushUser");
-
-        if (!savedUser) {
-          showMessage(
-            "❌ Account not found! Please register first."
-          );
-
-          return;
-        }
-
-        let user;
-
-        try {
-          user = JSON.parse(savedUser);
-        } catch (error) {
-          showMessage(
-            "❌ Account data is corrupted!"
-          );
-
-          return;
-        }
-
-        /* =========================
-           CHECK EMAIL
-        ========================= */
-
-        if (
-          user.email.toLowerCase() !==
-          email.toLowerCase()
-        ) {
-          showMessage(
-            "❌ Incorrect email or password!"
-          );
-
-          return;
-        }
-
-        /* =========================
-           CHECK PASSWORD
-        ========================= */
-
-        if (user.password !== password) {
-          showMessage(
-            "❌ Incorrect email or password!"
-          );
-
-          return;
-        }
-
-        /* =========================
-           LOGIN SUCCESS
-        ========================= */
-
-        localStorage.setItem(
-          "lootRushLoggedIn",
-          "true"
-        );
-
-        showMessage(
-          "✅ Login successful! Welcome back!"
-        );
-
-        /* =========================
-           GO TO GAME
-        ========================= */
-
-        setTimeout(function () {
-          window.location.href = "index.html";
-        }, 1000);
-      });
-    </script>
-
-  </body>
+    });
+  </script>
+</body>
 </html>
