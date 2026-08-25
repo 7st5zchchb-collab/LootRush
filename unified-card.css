@@ -1,0 +1,96 @@
+/* =====================================================
+   LOOTRUSH — ONE UNIFIED SMALL CARD STYLE
+   Login / Register / Roll reward / Popup-style panels
+   ===================================================== */
+
+:root {
+  --unified-card-width: min(380px, calc(100vw - 32px));
+  --unified-card-radius: 20px;
+}
+
+/* Login / Register */
+#authOverlay .auth-box {
+  width: var(--unified-card-width) !important;
+  max-width: 380px !important;
+  padding: 24px !important;
+  border-radius: var(--unified-card-radius) !important;
+}
+
+/* Roll result card — keep it small instead of a huge screen-wide panel */
+#game .loot-box,
+#game #lootBox,
+#game .mystery-loot,
+#game .mystery-loot-box {
+  width: var(--unified-card-width) !important;
+  max-width: 380px !important;
+  min-height: 0 !important;
+  margin: 24px auto !important;
+  padding: 24px !important;
+  border-radius: var(--unified-card-radius) !important;
+  box-sizing: border-box !important;
+}
+
+#game .loot-box .loot-icon,
+#game .loot-box #lootIcon {
+  font-size: 56px !important;
+  margin: 8px auto 14px !important;
+}
+
+#game .loot-box #lootName {
+  font-size: 22px !important;
+  margin: 8px auto !important;
+}
+
+#game .loot-box #lootDescription {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  margin: 8px auto 14px !important;
+}
+
+#game .loot-box #reward {
+  font-size: 24px !important;
+  display: block !important;
+  margin-top: 10px !important;
+}
+
+/* Any popup/dialog classes that may be used by optional modules */
+.modal-content,
+.popup-content,
+.popup-card,
+.dialog-content,
+.result-card,
+.reward-popup,
+.reward-modal,
+.confirm-card,
+.confirm-modal {
+  width: var(--unified-card-width) !important;
+  max-width: 380px !important;
+  max-height: calc(100vh - 32px) !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+  border-radius: var(--unified-card-radius) !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile: same compact proportions */
+@media (max-width: 480px) {
+  #authOverlay .auth-box,
+  #game .loot-box,
+  #game #lootBox,
+  #game .mystery-loot,
+  #game .mystery-loot-box,
+  .modal-content,
+  .popup-content,
+  .popup-card,
+  .dialog-content,
+  .result-card,
+  .reward-popup,
+  .reward-modal,
+  .confirm-card,
+  .confirm-modal {
+    width: min(340px, calc(100vw - 24px)) !important;
+    max-width: 340px !important;
+    padding: 20px !important;
+    border-radius: 18px !important;
+  }
+}
