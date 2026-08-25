@@ -2,12 +2,12 @@
 // LOOTRUSH AUTH
 // =====================================================
 // Register -> Login handoff:
-// 1. Register creates the account on the server.
+// 1. Register creates the account on the Render server.
 // 2. Username + password are temporarily kept in sessionStorage.
 // 3. Login automatically fills both fields.
 // 4. After a successful login, the temporary password is deleted.
 
-const LOOTRUSH_SERVER = "";
+const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
 let authBusy = false;
 
 function showMessage(text) {
@@ -15,8 +15,17 @@ function showMessage(text) {
   if (!message) return;
   message.textContent = text;
   message.classList.add("show");
+  message.style.position = "fixed";
+  message.style.left = "50%";
+  message.style.top = "24px";
+  message.style.transform = "translateX(-50%)";
+  message.style.zIndex = "10000";
+  message.style.display = "block";
+  message.style.pointerEvents = "none";
   clearTimeout(window.__lootRushMessageTimer);
-  window.__lootRushMessageTimer = setTimeout(() => message.classList.remove("show"), 5000);
+  window.__lootRushMessageTimer = setTimeout(() => {
+    message.classList.remove("show");
+  }, 5000);
 }
 
 function switchAuthForm(form) {
@@ -188,7 +197,6 @@ async function handleLogin() {
     setSession(data);
     applyServerUser(data.user);
 
-    // Password is removed as soon as it has been used.
     sessionStorage.removeItem("lootRushPendingPassword");
     sessionStorage.removeItem("lootRushPendingUsername");
     sessionStorage.removeItem("lootRushPendingEmail");
@@ -237,7 +245,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
 
-  // Auto-fill the Login form when Register has just completed.
   const pendingUsername = sessionStorage.getItem("lootRushPendingUsername") || localStorage.getItem("lootRushPendingUsername") || "";
   const pendingPassword = sessionStorage.getItem("lootRushPendingPassword") || "";
   const loginUsername = document.getElementById("loginUsername");
