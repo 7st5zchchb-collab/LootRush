@@ -1,285 +1,80 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LootRush - Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background"><div class="grid"></div><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <div class="register-wrapper">
+    <div class="register-card">
+      <div class="logo"><h1>Loot<span>Rush</span></h1><p>Create your account and start your journey</p></div>
 
-    <title>LootRush - Register</title>
-<link rel="stylesheet" href="style.css">
+      <form id="registerForm">
+        <div class="input-group"><label for="username">Username</label><div class="input-box"><span class="input-icon"></span><input type="text" id="username" placeholder="Enter your username" autocomplete="username" required></div></div>
+        <div class="input-group"><label for="email">Email</label><div class="input-box"><span class="input-icon"></span><input type="email" id="email" placeholder="Enter your email" autocomplete="email" required></div></div>
+        <div class="input-group"><label for="password">Password</label><div class="input-box"><span class="input-icon"></span><input type="password" id="password" placeholder="Create a password" autocomplete="new-password" minlength="6" required></div><p class="password-hint">Password must contain at least 6 characters.</p></div>
+        <div class="input-group"><label for="confirmPassword">Confirm Password</label><div class="input-box"><span class="input-icon"></span><input type="password" id="confirmPassword" placeholder="Repeat your password" autocomplete="new-password" minlength="6" required></div></div>
+        <label class="terms"><input type="checkbox" id="terms" required><span>I agree to the <a href="#" onclick="return false;">Terms of Service</a> and <a href="#" onclick="return false;">Privacy Policy</a>.</span></label>
+        <button type="submit" class="register-button">🚀 Create Account</button>
+      </form>
 
-  </head>
-
-  <body>
-    <!-- =========================
-         3D BACKGROUND
-    ========================= -->
-
-    <div class="background">
-      <div class="grid"></div>
-
-      <div class="orb orb1"></div>
-      <div class="orb orb2"></div>
-      <div class="orb orb3"></div>
+      <div class="login-text">Already have an account? <a href="login.html">Login</a></div>
     </div>
+  </div>
 
-    <!-- =========================
-         REGISTER
-    ========================= -->
+  <div id="message"></div>
 
-    <div class="register-wrapper">
-      <div class="register-card">
-        <div class="logo">
-          <h1>Loot<span>Rush</span></h1>
+  <script>
+    const LOOTRUSH_SERVER = "https://lootrush-2.onrender.com";
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("message");
 
-          <p>Create your account and start your journey</p>
-        </div>
+    function showMessage(text) {
+      message.textContent = text;
+      message.classList.add("show");
+      clearTimeout(window.__messageTimer);
+      window.__messageTimer = setTimeout(() => message.classList.remove("show"), 5000);
+    }
 
-        <form id="registerForm">
-          <!-- USERNAME -->
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
-          <div class="input-group">
-            <label for="username"> Username </label>
+      if (username.length < 3) return showMessage("❌ Username must be at least 3 characters!");
+      if (password.length < 6) return showMessage("❌ Password must be at least 6 characters!");
+      if (password !== confirmPassword) return showMessage("❌ Passwords do not match!");
+      if (!document.getElementById("terms").checked) return showMessage("❌ Please accept the Terms!");
 
-            <div class="input-box">
-              <span class="input-icon">  </span>
+      try {
+        showMessage("⏳ Creating account...");
+        const response = await fetch(`${LOOTRUSH_SERVER}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Registration failed.");
 
-              <input
-                type="text"
-                id="username"
-                placeholder="Enter your username"
-                autocomplete="username"
-                required
-              />
-            </div>
-          </div>
+        // Keep the credentials only for this Register -> Login handoff.
+        // They are removed immediately after the next login attempt.
+        sessionStorage.setItem("lootRushPendingUsername", username);
+        sessionStorage.setItem("lootRushPendingPassword", password);
+        sessionStorage.setItem("lootRushPendingEmail", email);
 
-          <!-- EMAIL -->
-
-          <div class="input-group">
-            <label for="email"> Email </label>
-
-            <div class="input-box">
-              <span class="input-icon">  </span>
-
-              <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                autocomplete="email"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- PASSWORD -->
-
-          <div class="input-group">
-            <label for="password"> Password </label>
-
-            <div class="input-box">
-              <span class="input-icon">  </span>
-
-              <input
-                type="password"
-                id="password"
-                placeholder="Create a password"
-                autocomplete="new-password"
-                minlength="6"
-                required
-              />
-            </div>
-
-            <p class="password-hint">
-              Password must contain at least 6 characters.
-            </p>
-          </div>
-
-          <!-- CONFIRM PASSWORD -->
-
-          <div class="input-group">
-            <label for="confirmPassword"> Confirm Password </label>
-
-            <div class="input-box">
-              <span class="input-icon">  </span>
-
-              <input
-                type="password"
-                id="confirmPassword"
-                placeholder="Repeat your password"
-                autocomplete="new-password"
-                minlength="6"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- TERMS -->
-
-          <label class="terms">
-            <input type="checkbox" id="terms" required />
-
-            <span>
-              I agree to the
-              <a href="#" onclick="return false;"> Terms of Service </a>
-              and
-              <a href="#" onclick="return false;"> Privacy Policy </a>.
-            </span>
-          </label>
-
-          <!-- BUTTON -->
-
-          <button type="submit" class="register-button">
-            🚀 Create Account
-          </button>
-        </form>
-
-        <!-- LOGIN -->
-
-        <div class="login-text">
-          Already have an account?
-          <a href="index.html"> Login </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- MESSAGE -->
-
-    <div id="message"></div>
-
-    <script>
-      const registerForm = document.getElementById("registerForm");
-
-      const message = document.getElementById("message");
-
-      function showMessage(text) {
-        message.textContent = text;
-
-        message.classList.add("show");
-
-        setTimeout(function () {
-          message.classList.remove("show");
-        }, 2500);
+        showMessage("✅ Account created! Opening Login...");
+        setTimeout(() => { window.location.href = "login.html"; }, 700);
+      } catch (error) {
+        console.error(error);
+        showMessage(`❌ ${error.message || "Registration failed."}`);
       }
-
-      registerForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const username = document.getElementById("username").value.trim();
-
-        const email = document.getElementById("email").value.trim();
-
-        const password = document.getElementById("password").value;
-
-        const confirmPassword =
-          document.getElementById("confirmPassword").value;
-
-        const terms = document.getElementById("terms").checked;
-
-        /* =========================
-             VALIDATION
-          ========================= */
-
-        if (username.length < 3) {
-          showMessage("❌ Username must be at least 3 characters!");
-
-          return;
-        }
-
-        if (password.length < 6) {
-          showMessage("❌ Password must be at least 6 characters!");
-
-          return;
-        }
-
-        if (password !== confirmPassword) {
-          showMessage("❌ Passwords do not match!");
-
-          return;
-        }
-
-        if (!terms) {
-          showMessage("❌ Please accept the Terms!");
-
-          return;
-        }
-
-        /* =========================
-             CHECK OLD ACCOUNT
-          ========================= */
-
-        const existingUser = localStorage.getItem("lootRushUser");
-
-        if (existingUser) {
-          try {
-            const oldUser = JSON.parse(existingUser);
-
-            if (oldUser.email.toLowerCase() === email.toLowerCase()) {
-              showMessage("⚠️ This email is already registered!");
-
-              return;
-            }
-
-            if (oldUser.username.toLowerCase() === username.toLowerCase()) {
-              showMessage("⚠️ This username is already taken!");
-
-              return;
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        }
-
-        /* =========================
-             CREATE ACCOUNT
-          ========================= */
-
-        const user = {
-          username: username,
-          email: email,
-          password: password,
-
-          /* Starting wallet */
-
-          balance: 0,
-
-          /* Game currencies */
-
-          coins: 100,
-          diamonds: 0,
-
-          /* Game data */
-
-          totalRolls: 0,
-          bestStreak: 0,
-          rareItems: 0,
-
-          inventory: [],
-          history: [],
-
-          currentSkin: "Default",
-
-          createdAt: new Date().toISOString(),
-        };
-
-        /* SAVE ACCOUNT */
-
-        localStorage.setItem("lootRushUser", JSON.stringify(user));
-
-        /* LOGIN STATUS */
-
-        localStorage.setItem("lootRushLoggedIn", "false");
-
-        showMessage("✅ Account created successfully!");
-
-        /*
-             1.5 վայրկյանից տեղափոխում ենք Login
-          */
-
-        setTimeout(function () {
-          window.location.href = "login.html";
-        }, 1500);
-      });
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
