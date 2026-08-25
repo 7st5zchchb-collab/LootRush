@@ -1,9 +1,11 @@
 // =====================================================
 // LOOTRUSH AUTH
 // =====================================================
-// Register uses Username + Email + Password.
-// Login shows Username, while the server still authenticates with Email.
-// The username -> email mapping is stored locally after registration.
+// Register -> Login handoff:
+// 1. Register creates the account on the server.
+// 2. Username + password are temporarily kept in sessionStorage.
+// 3. Login automatically fills both fields.
+// 4. After a successful login, the temporary password is deleted.
 
 const LOOTRUSH_SERVER = "";
 let authBusy = false;
@@ -75,7 +77,6 @@ function clearSession() {
   localStorage.removeItem("lootRushUser");
   localStorage.setItem("lootRushLoggedIn", "false");
   localStorage.setItem("loggedIn", "false");
-  // Keep lootRushLoginEmail so the username login can continue to work after logout.
 }
 
 async function readJson(response) { return response.json().catch(() => ({})); }
@@ -84,7 +85,10 @@ async function refreshServerUser() {
   const token = getToken();
   if (!token) return false;
   try {
-    const response = await fetch("/me", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    const response = await fetch(`${LOOTRUSH_SERVER}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
     if (!response.ok) throw new Error("Session expired");
     const data = await readJson(response);
     if (!data.success || !data.user) throw new Error("Invalid account response");
@@ -126,7 +130,7 @@ async function handleRegister() {
   authBusy = true;
   try {
     showMessage("⏳ Creating account...");
-    const response = await fetch("/register", {
+    const response = await fetch(`${LOOTRUSH_SERVER}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -135,26 +139,18 @@ async function handleRegister() {
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error || "Registration failed.");
 
-    // Save the email behind the scenes. The user will only see their username on Login.
-    localStorage.setItem("lootRushLoginEmail", email);
+    sessionStorage.setItem("lootRushPendingUsername", username);
+    sessionStorage.setItem("lootRushPendingPassword", password);
+    sessionStorage.setItem("lootRushPendingEmail", email);
     localStorage.setItem("lootRushPendingUsername", username);
-
-    if (data.token && data.user) {
-      setSession(data);
-      applyServerUser(data.user);
-      checkAuth(true);
-      if (typeof showPage === "function") showPage("game");
-      showMessage(`✅ Welcome ${data.user.username}!`);
-      return;
-    }
 
     setupLoginUsernameField();
     const loginUsername = document.getElementById("loginUsername");
     const loginPassword = document.getElementById("loginPassword");
     if (loginUsername) loginUsername.value = username;
-    if (loginPassword) loginPassword.value = "";
+    if (loginPassword) loginPassword.value = password;
     switchAuthForm("login");
-    showMessage("✅ Account created. Verify your email, then sign in with your username.");
+    showMessage("✅ Account created! Login details filled automatically.");
   } catch (error) {
     console.error(error);
     showMessage(`❌ ${error.message || "Registration failed."}`);
@@ -166,36 +162,38 @@ async function handleRegister() {
 async function handleLogin() {
   if (authBusy) return;
   setupLoginUsernameField();
+
   const username = document.getElementById("loginUsername")?.value.trim() || "";
   const password = document.getElementById("loginPassword")?.value || "";
   if (!username || !password) return showMessage("❌ Enter username and password.");
 
-  // The server currently expects email. We hide that detail from the user and
-  // resolve the previously registered username to its saved email locally.
-  const email = localStorage.getItem("lootRushLoginEmail") || localStorage.getItem("registeredEmail") || "";
-  if (!email) {
-    return showMessage("❌ This username is not linked on this device yet. Register this account here first.");
-  }
-
   authBusy = true;
   try {
     showMessage("⏳ Signing in...");
-    const response = await fetch("/login", {
+    const response = await fetch(`${LOOTRUSH_SERVER}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
       cache: "no-store"
     });
     const data = await readJson(response);
     if (!response.ok || !data.token || !data.user) {
       throw new Error(data.error || "Wrong username or password.");
     }
-    // Safety check: don't allow a different account to be logged in through a stale mapping.
+
     if (data.user.username && data.user.username.toLowerCase() !== username.toLowerCase()) {
       throw new Error("Username or password is incorrect.");
     }
+
     setSession(data);
     applyServerUser(data.user);
+
+    // Password is removed as soon as it has been used.
+    sessionStorage.removeItem("lootRushPendingPassword");
+    sessionStorage.removeItem("lootRushPendingUsername");
+    sessionStorage.removeItem("lootRushPendingEmail");
+    localStorage.removeItem("lootRushPendingUsername");
+
     checkAuth(true);
     if (typeof showPage === "function") showPage("game");
     showMessage(`✅ Welcome ${data.user.username}!`);
@@ -222,8 +220,8 @@ async function logout() {
   if (name) name.textContent = "Guest";
   const loginUsername = document.getElementById("loginUsername");
   const loginPassword = document.getElementById("loginPassword");
-  if (loginUsername) loginUsername.value = localStorage.getItem("lootRushPendingUsername") || "";
-  if (loginPassword) loginPassword.value = "";
+  if (loginUsername) loginUsername.value = sessionStorage.getItem("lootRushPendingUsername") || localStorage.getItem("lootRushPendingUsername") || "";
+  if (loginPassword) loginPassword.value = sessionStorage.getItem("lootRushPendingPassword") || "";
   showMessage("✅ You have been logged out.");
 }
 
@@ -239,9 +237,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
 
-  const pendingUsername = localStorage.getItem("lootRushPendingUsername");
+  // Auto-fill the Login form when Register has just completed.
+  const pendingUsername = sessionStorage.getItem("lootRushPendingUsername") || localStorage.getItem("lootRushPendingUsername") || "";
+  const pendingPassword = sessionStorage.getItem("lootRushPendingPassword") || "";
   const loginUsername = document.getElementById("loginUsername");
+  const loginPassword = document.getElementById("loginPassword");
   if (loginUsername && pendingUsername) loginUsername.value = pendingUsername;
+  if (loginPassword && pendingPassword) loginPassword.value = pendingPassword;
 
   const token = getToken();
   if (!token) {
