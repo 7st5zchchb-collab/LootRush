@@ -1,9 +1,9 @@
 // =====================================================
-// LOOTRUSH AUTH — RENDER ONLY
+// LOOTRUSH AUTH
 // =====================================================
-// Register / Login / Refresh / /me / Logout use the same
-// Render origin. No Cloudflare API and no client-side email
-// verification step are used here.
+// Register uses Username + Email + Password.
+// Login uses Username + Password.
+// Email verification remains handled by the server.
 
 const LOOTRUSH_SERVER = "";
 let authBusy = false;
@@ -24,6 +24,17 @@ function switchAuthForm(form) {
   const register = form === "register";
   loginForm.classList.toggle("hidden", register);
   registerForm.classList.toggle("hidden", !register);
+}
+
+function setupLoginUsernameField() {
+  const oldInput = document.getElementById("loginEmail");
+  if (!oldInput) return;
+  oldInput.type = "text";
+  oldInput.placeholder = "Enter username";
+  oldInput.autocomplete = "username";
+  oldInput.id = "loginUsername";
+  const label = oldInput.closest(".input-group")?.querySelector("label");
+  if (label) label.textContent = "Username";
 }
 
 function getToken() {
@@ -104,6 +115,7 @@ function checkAuth(loggedIn) {
 function openAuth(form = "login") {
   const overlay = document.getElementById("authOverlay");
   if (!overlay) return;
+  setupLoginUsernameField();
   switchAuthForm(form);
   overlay.classList.remove("hidden");
   overlay.classList.add("show-auth");
@@ -131,7 +143,6 @@ async function handleRegister() {
     const data = await readJson(response);
     if (!response.ok) throw new Error(data.error || "Registration failed.");
 
-    // If the server returns a session, log in immediately.
     if (data.token && data.user) {
       setSession(data);
       applyServerUser(data.user);
@@ -141,14 +152,13 @@ async function handleRegister() {
       return;
     }
 
-    // Backward-compatible response: registration succeeded but the server
-    // did not return a token. Move to Login instead of asking for email.
-    const loginEmail = document.getElementById("loginEmail");
+    setupLoginUsernameField();
+    const loginUsername = document.getElementById("loginUsername");
     const loginPassword = document.getElementById("loginPassword");
-    if (loginEmail) loginEmail.value = email;
+    if (loginUsername) loginUsername.value = username;
     if (loginPassword) loginPassword.value = "";
     switchAuthForm("login");
-    showMessage("✅ Account created. You can now sign in.");
+    showMessage("✅ Account created. Verify your email, then sign in with your username.");
   } catch (error) {
     console.error(error);
     showMessage(`❌ ${error.message || "Registration failed."}`);
@@ -159,9 +169,10 @@ async function handleRegister() {
 
 async function handleLogin() {
   if (authBusy) return;
-  const email = document.getElementById("loginEmail")?.value.trim().toLowerCase() || "";
+  setupLoginUsernameField();
+  const username = document.getElementById("loginUsername")?.value.trim() || "";
   const password = document.getElementById("loginPassword")?.value || "";
-  if (!email || !password) return showMessage("❌ Enter email and password.");
+  if (!username || !password) return showMessage("❌ Enter username and password.");
 
   authBusy = true;
   try {
@@ -169,12 +180,12 @@ async function handleLogin() {
     const response = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
       cache: "no-store"
     });
     const data = await readJson(response);
     if (!response.ok || !data.token || !data.user) {
-      throw new Error(data.error || "Wrong email or password.");
+      throw new Error(data.error || "Wrong username or password.");
     }
     setSession(data);
     applyServerUser(data.user);
@@ -190,9 +201,8 @@ async function handleLogin() {
 }
 
 async function logout() {
-  // Authentication is bearer-token based, so logout is local token revocation.
-  // The token is discarded immediately and /me will no longer be called with it.
   clearSession();
+  setupLoginUsernameField();
   switchAuthForm("login");
   const overlay = document.getElementById("authOverlay");
   if (overlay) {
@@ -203,6 +213,10 @@ async function logout() {
   if (dropdown) dropdown.classList.remove("show");
   const name = document.getElementById("playerNameTop");
   if (name) name.textContent = "Guest";
+  const loginUsername = document.getElementById("loginUsername");
+  const loginPassword = document.getElementById("loginPassword");
+  if (loginUsername) loginUsername.value = "";
+  if (loginPassword) loginPassword.value = "";
   showMessage("✅ You have been logged out.");
 }
 
@@ -213,11 +227,11 @@ function showRegister() { openAuth("register"); }
 function showLogin() { openAuth("login"); }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  setupLoginUsernameField();
   const overlay = document.getElementById("authOverlay");
   if (overlay) overlay.classList.add("hidden");
   switchAuthForm("login");
 
-  // No email verification redirect/flow here.
   const token = getToken();
   if (!token) {
     openAuth("login");
