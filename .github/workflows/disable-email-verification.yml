@@ -1,15 +1,15 @@
 name: Apply LootRush auth fix
 
 on:
-  push:
-    branches: [main]
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   disable-email-verification:
-    if: github.event.head_commit.message != 'Disable email verification for now'
     runs-on: ubuntu-latest
     steps:
       - name: Update server auth
@@ -33,7 +33,6 @@ jobs:
             }
 
             const registerRoute = `app.post("/register",async(req,res)=>{if(!requireDatabase(res)||!requireSessionSecret(res))return;try{const username=String(req.body.username||"").trim(),email=String(req.body.email||"").trim().toLowerCase(),password=String(req.body.password||"");if(username.length<3||!email.includes("@")||password.length<6)return res.status(400).json({error:"Username, valid email and 6+ character password required."});const hash=await hashPassword(password);const r=await pool.query("INSERT INTO users (username,email,password_hash) VALUES ($1,$2,$3) RETURNING id,username,email,coins,diamonds,points",[username,email,hash]);res.json({success:true,user:r.rows[0]})}catch(err){if(err.code==="23505")return res.status(409).json({error:"Email already registered."});res.status(500).json({error:"Registration failed."})}});\n`;
-
             source = source.slice(0, registerStart) + registerRoute + source.slice(verifyStart);
 
             const loginStart = source.indexOf('app.post("/login"');
@@ -44,7 +43,6 @@ jobs:
             }
 
             const loginRoute = `app.post("/login",async(req,res)=>{if(!requireDatabase(res)||!requireSessionSecret(res))return;try{const username=String(req.body.username||"").trim(),password=String(req.body.password||""),r=await pool.query("SELECT * FROM users WHERE username=$1",[username]);if(r.rowCount!==1||!(await verifyPassword(password,r.rows[0].password_hash)))return res.status(401).json({error:"Wrong username or password."});const u=r.rows[0];res.json({success:true,token:signToken(u.id),user:{id:u.id,username:u.username,email:u.email,coins:u.coins,diamonds:u.diamonds,points:u.points}})}catch(err){res.status(500).json({error:"Login failed."})}});\n`;
-
             source = source.slice(0, loginStart) + loginRoute + source.slice(meStart);
 
             await github.rest.repos.createOrUpdateFileContents({
@@ -56,3 +54,5 @@ jobs:
               sha,
               branch: ref
             });
+
+            await github.rest.issues.update({ owner, repo, issue_number: context.issue.number, state: 'closed' });
