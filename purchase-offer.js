@@ -1,4 +1,4 @@
-/* Inline offer shown in the existing ad area. Buy opens the existing Shop page; Skip closes it. */
+/* Purchase offer is hidden on page load and opens only when explicitly requested. */
 (function(){
   function renderOffer(){
     if(document.getElementById('lrPurchaseOffer')) return;
@@ -13,5 +13,5 @@
     document.getElementById('lrSkipOffer')?.addEventListener('click',()=>wrap.classList.remove('show'));
   }
   window.showLootRushPurchaseOffer=function(){renderOffer();document.getElementById('lrPurchaseOffer')?.classList.add('show')};
-  document.addEventListener('DOMContentLoaded',()=>{renderOffer();setTimeout(()=>window.showLootRushPurchaseOffer(),900)});
+  document.addEventListener('DOMContentLoaded',()=>{renderOffer();document.getElementById('lrPurchaseOffer')?.classList.remove('show')});
 })();
