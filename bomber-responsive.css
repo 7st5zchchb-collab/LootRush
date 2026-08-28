@@ -1,5 +1,25 @@
-/* Bomber keeps the original game-board proportions. */
+/* Bomber responsive layout: balance + bet + bombs stay compact and aligned. */
+.bomber-balance-row{width:min(100%,520px);margin:12px auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;border-radius:12px;}
+.bomber-controls{width:min(100%,520px);margin:12px auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;}
+.bomber-controls>div{min-width:0;}
+.bomber-controls label{display:block;margin-bottom:6px;}
+.bomber-controls input,.bomber-controls select{width:100%;height:44px;box-sizing:border-box;}
+.bomber-info{width:min(100%,520px);margin:12px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.bomber-info>span{min-width:0;text-align:center;white-space:nowrap;}
 .bomber-board{width:min(100%,520px);margin:18px auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;aspect-ratio:1/1;}
 .bomber-board button,.bomber-board .bomber-cell{min-width:0;min-height:0;aspect-ratio:1/1;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .bomber-replay-button{width:100%;max-width:520px;margin:10px auto 0;}
-@media(max-width:768px){.bomber-board{width:min(100%,420px);gap:6px;margin:14px auto;}.bomber-board button,.bomber-board .bomber-cell{font-size:clamp(16px,6vw,28px);}.bomber-replay-button{min-height:44px;}}
+#bomberStartButton,#bomberCashoutButton{width:min(100%,520px);margin:8px auto;display:block;min-height:46px;}
+@media(max-width:768px){
+  .bomber-balance-row,.bomber-controls,.bomber-info,.bomber-board{width:100%;}
+  .bomber-controls{grid-template-columns:1fr 1fr;gap:8px;}
+  .bomber-controls input,.bomber-controls select{height:42px;font-size:16px;}
+  .bomber-info{gap:5px;font-size:13px;}
+  .bomber-board{gap:5px;margin:14px auto;}
+  .bomber-board button,.bomber-board .bomber-cell{font-size:clamp(15px,6vw,27px);}
+  .bomber-replay-button{min-height:44px;}
+}
+@media(max-width:420px){
+  .bomber-controls{grid-template-columns:1fr;}
+  .bomber-info{grid-template-columns:1fr 1fr 1fr;font-size:12px;}
+}
