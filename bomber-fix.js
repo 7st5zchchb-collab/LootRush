@@ -1,4 +1,4 @@
-/* LootRush Bomber: free START -> offer flow. No Bet. */
+/* LootRush Bomber: balance-gated START -> inline offer flow. No Bet. */
 (function () {
   let board = [];
   let bombs = 3;
@@ -19,9 +19,27 @@
     return typeof diamonds === "number" && Number.isFinite(diamonds) ? diamonds : 0;
   }
 
-  function showBomberOffer() {
+  function hideBomberOffer() {
     const offer = $("bomberOffer");
-    if (offer) offer.classList.add("show");
+    if (!offer) return;
+    offer.classList.remove("show");
+    const msg = offer.querySelector(".lr-insufficient");
+    if (msg) msg.remove();
+  }
+
+  function showBomberOffer(required) {
+    const offer = $("bomberOffer");
+    if (!offer) return;
+    let msg = offer.querySelector(".lr-insufficient");
+    if (!msg) {
+      msg = document.createElement("div");
+      msg.className = "lr-insufficient";
+      offer.prepend(msg);
+    }
+    const balance = Math.floor(getDiamondBalance());
+    msg.innerHTML = `⚠️ Բավարար Diamonds չկա<br><small>Պետք է՝ ${required} 💎 &nbsp;|&nbsp; Balance՝ ${balance} 💎</small>`;
+    msg.classList.add("show");
+    offer.classList.add("show");
   }
 
   function updateUI() {
@@ -29,13 +47,9 @@
     if ($("safeCount")) $("safeCount").textContent = safeCount;
     if ($("bomberMultiplier")) $("bomberMultiplier").textContent = multiplier.toFixed(2) + "x";
     if ($("bomberDiamondBalance")) $("bomberDiamondBalance").textContent = Math.floor(getDiamondBalance());
-
     const start = $("bomberStartButton");
     const cash = $("bomberCashoutButton");
-    if (start) {
-      start.disabled = false;
-      start.textContent = "▶ START";
-    }
+    if (start) { start.disabled = false; start.textContent = "▶ START"; }
     if (cash) cash.disabled = !active || safeCount === 0;
   }
 
@@ -44,10 +58,8 @@
     if (!container) return;
     container.innerHTML = "";
     board = [];
-
     const bombPositions = new Set();
     while (bombPositions.size < bombs) bombPositions.add(Math.floor(Math.random() * 25));
-
     for (let i = 0; i < 25; i++) {
       const cell = document.createElement("button");
       cell.type = "button";
@@ -70,37 +82,39 @@
 
   function startBomberGame() {
     if (active) return;
+    /* One diamond is required to start. If balance is insufficient, show the offer card only now. */
+    const required = 1;
+    if (getDiamondBalance() < required) {
+      showBomberOffer(required);
+      if ($("bomberStatus")) $("bomberStatus").textContent = "⚠️ NOT ENOUGH DIAMONDS";
+      return;
+    }
+    hideBomberOffer();
     safeCount = 0;
     multiplier = 1;
     active = true;
     createBoard();
     updateUI();
-    showBomberOffer();
+    if ($("bomberStatus")) $("bomberStatus").textContent = "READY";
   }
 
   function openCell(index, cell) {
     if (!active || cell.disabled) return;
     cell.disabled = true;
-
     if (cell.dataset.bomb === "1") {
       cell.textContent = "💣";
       cell.classList.add("bomb");
       active = false;
-      board.forEach(c => {
-        c.disabled = true;
-        if (c.dataset.bomb === "1") c.textContent = "💣";
-      });
+      board.forEach(c => { c.disabled = true; if (c.dataset.bomb === "1") c.textContent = "💣"; });
       if ($("bomberStatus")) $("bomberStatus").textContent = "💥 BOMB!";
       updateUI();
       return;
     }
-
     safeCount++;
     multiplier = getMultiplier(safeCount);
     cell.textContent = "💎";
     cell.classList.add("safe");
     updateUI();
-
     if (safeCount >= 25 - bombs) cashOutBomber();
   }
 
@@ -108,10 +122,7 @@
     if (!active || safeCount < 1) return;
     active = false;
     if ($("bomberStatus")) $("bomberStatus").textContent = `CASH OUT ${multiplier.toFixed(2)}x`;
-    board.forEach(c => {
-      c.disabled = true;
-      if (c.dataset.bomb === "1") c.textContent = "💣";
-    });
+    board.forEach(c => { c.disabled = true; if (c.dataset.bomb === "1") c.textContent = "💣"; });
     updateUI();
   }
 
@@ -130,6 +141,12 @@
   window.changeBomberBombs = changeBomberBombs;
   window.updateBomberBetUI = function () {};
   window.initBomber = resetBoard;
+  window.skipGameOffer = function (game) {
+    if (game !== "bomber") return;
+    hideBomberOffer();
+    if ($("bomberStatus")) $("bomberStatus").textContent = "READY";
+    updateUI();
+  };
 
   document.addEventListener("DOMContentLoaded", () => {
     const selector = $("bomberBombSelector");
@@ -143,8 +160,7 @@
       }
       selector.value = "3";
     }
-    const offer = $("bomberOffer");
-    if (offer) offer.classList.remove("show");
+    hideBomberOffer();
     resetBoard();
   });
 })();
