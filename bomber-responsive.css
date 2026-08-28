@@ -4,6 +4,10 @@
 .bomber-controls>div{min-width:0;}
 .bomber-controls label{display:block;margin-bottom:6px;}
 .bomber-controls input,.bomber-controls select{width:100%;height:44px;box-sizing:border-box;}
+/* Bet is number input, but browser spinner arrows are hidden. */
+#bomberBet{-moz-appearance:textfield;appearance:textfield;}
+#bomberBet::-webkit-outer-spin-button,
+#bomberBet::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .bomber-info{width:min(100%,520px);margin:12px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .bomber-info>span{min-width:0;text-align:center;white-space:nowrap;}
 .bomber-board{width:min(100%,520px);margin:18px auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;aspect-ratio:1/1;}
