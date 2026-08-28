@@ -59,7 +59,8 @@ function setSession(data) {
   localStorage.setItem("lootRushUser", JSON.stringify(data.user));
   localStorage.setItem("playerName", data.user.username || "Guest");
   if (data.user.email) localStorage.setItem("lootRushLoginEmail", data.user.email);
-  localStorage.setItem("coins", String(data.user.coins ?? 150));
+  // Login NEVER creates a starter balance. The server is authoritative.
+  localStorage.setItem("coins", String(data.user.coins ?? 0));
   localStorage.setItem("diamonds", String(data.user.diamonds ?? 0));
   localStorage.setItem("points", String(data.user.points ?? 0));
   return true;
