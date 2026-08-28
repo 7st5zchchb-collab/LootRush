@@ -4,6 +4,72 @@
 (function () {
   "use strict";
 
+  function installRocketModalCSS() {
+    if (document.getElementById("rocket-modal-css-fix")) return;
+    const style = document.createElement("style");
+    style.id = "rocket-modal-css-fix";
+    style.textContent = `
+      #crashInsufficientModal {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        z-index: 2147483000 !important;
+      }
+      #crashInsufficientModal.show {
+        display: flex !important;
+      }
+      #crashInsufficientModal .bomber-offer-backdrop {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        background: rgba(0,0,0,.72) !important;
+      }
+      #crashInsufficientModal .bomber-offer-modal {
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: min(92vw, 430px) !important;
+        max-width: 430px !important;
+        max-height: 90vh !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        z-index: 2 !important;
+      }
+      #crashInsufficientModal .bomber-offer-content,
+      #crashInsufficientModal .bomber-ad-box,
+      #crashInsufficientModal .bomber-diamond-box {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      #crashInsufficientModal .bomber-skip {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      @media (max-width: 600px) {
+        #crashInsufficientModal .bomber-offer-modal {
+          width: 94vw !important;
+          max-width: 94vw !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  installRocketModalCSS();
+
   function showCrashInsufficientModal(required) {
     let m = document.getElementById("crashInsufficientModal");
     if (!m) {
@@ -26,67 +92,33 @@
     const input = document.getElementById("crashBet");
     const requestedBet = Math.floor(Number(input && input.value) || 5);
     crashBet = Math.max(1, requestedBet);
-
-    if (!Number.isFinite(crashBet) || crashBet <= 0) {
-      showMessage("❌ Invalid bet.");
-      return;
-    }
-    if (diamonds < crashBet) {
-      showCrashInsufficientModal(crashBet);
-      return;
-    }
-
+    if (!Number.isFinite(crashBet) || crashBet <= 0) { showMessage("❌ Invalid bet."); return; }
+    if (diamonds < crashBet) { showCrashInsufficientModal(crashBet); return; }
     diamonds -= crashBet;
     crashGameActive = true;
     crashMultiplier = 1;
     crashStep = 0;
     crashHistory = [];
-    updateAllUI();
-    updateCrashUI();
-    saveGame();
-    runCrashStep();
+    updateAllUI(); updateCrashUI(); saveGame(); runCrashStep();
   };
 
   window.cashOutCrash = function () {
     if (!crashGameActive) return;
     const payout = Number((crashBet * crashMultiplier).toFixed(2));
-    crashGameActive = false;
-    diamonds += payout;
-    crashWins++;
-    crashTotalGames++;
-    crashTotalWon += payout;
-    saveGame();
-    updateAllUI();
-    updateCrashUI();
-    renderCrashHistory();
-    showMessage(`💰 CASH OUT +${payout.toFixed(2)} 💎`);
+    crashGameActive = false; diamonds += payout; crashWins++; crashTotalGames++; crashTotalWon += payout;
+    saveGame(); updateAllUI(); updateCrashUI(); renderCrashHistory(); showMessage(`💰 CASH OUT +${payout.toFixed(2)} 💎`);
   };
 
   window.crashGameLose = function () {
     if (!crashGameActive) return;
-    crashGameActive = false;
-    crashLosses++;
-    crashTotalGames++;
-    saveGame();
-    updateAllUI();
-    updateCrashUI();
-    renderCrashHistory();
-    showMessage(`💥 CRASH at ${crashMultiplier.toFixed(2)}x`);
+    crashGameActive = false; crashLosses++; crashTotalGames++; saveGame(); updateAllUI(); updateCrashUI(); renderCrashHistory(); showMessage(`💥 CRASH at ${crashMultiplier.toFixed(2)}x`);
   };
 
   window.crashAutoWin = function () {
     if (!crashGameActive) return;
     const payout = Number((crashBet * crashMultiplier).toFixed(2));
-    crashGameActive = false;
-    diamonds += payout;
-    crashWins++;
-    crashTotalGames++;
-    crashTotalWon += payout;
-    saveGame();
-    updateAllUI();
-    updateCrashUI();
-    renderCrashHistory();
-    showMessage(`🏆 +${payout.toFixed(2)} 💎`);
+    crashGameActive = false; diamonds += payout; crashWins++; crashTotalGames++; crashTotalWon += payout;
+    saveGame(); updateAllUI(); updateCrashUI(); renderCrashHistory(); showMessage(`🏆 +${payout.toFixed(2)} 💎`);
   };
 
   window.createWithdrawalRequest = function () {
@@ -102,24 +134,11 @@
     let requests = [];
     try { requests = JSON.parse(localStorage.getItem("withdrawals")) || []; if (!Array.isArray(requests)) requests = []; } catch { requests = []; }
     requests.push({ amount, name, card: "**** **** **** " + clean.slice(-4), status: "Pending", date: new Date().toLocaleString() });
-    localStorage.setItem("withdrawals", JSON.stringify(requests));
-    updateAllUI(); saveGame(); showMessage("📤 Withdrawal request sent.");
+    localStorage.setItem("withdrawals", JSON.stringify(requests)); updateAllUI(); saveGame(); showMessage("📤 Withdrawal request sent.");
   };
 
-  function cleanWalletValue(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = el.textContent.replace(/[⭐💎💵🪙🤑]/gu, "").trim();
-  }
-  function cleanWalletEmojis() {
-    cleanWalletValue("walletPoints");
-    cleanWalletValue("walletDiamonds");
-    cleanWalletValue("walletDollarValue");
-  }
+  function cleanWalletValue(id) { const el = document.getElementById(id); if (el) el.textContent = el.textContent.replace(/[⭐💎💵🪙🤑]/gu, "").trim(); }
+  function cleanWalletEmojis() { cleanWalletValue("walletPoints"); cleanWalletValue("walletDiamonds"); cleanWalletValue("walletDollarValue"); }
   window.addEventListener("DOMContentLoaded", cleanWalletEmojis);
-  setTimeout(cleanWalletEmojis, 0);
-  setTimeout(cleanWalletEmojis, 100);
-  setTimeout(cleanWalletEmojis, 500);
-  setTimeout(cleanWalletEmojis, 1000);
-  setInterval(cleanWalletEmojis, 500);
+  setTimeout(cleanWalletEmojis, 0); setTimeout(cleanWalletEmojis, 100); setTimeout(cleanWalletEmojis, 500); setTimeout(cleanWalletEmojis, 1000); setInterval(cleanWalletEmojis, 500);
 })();
