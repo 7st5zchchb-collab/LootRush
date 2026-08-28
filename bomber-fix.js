@@ -1,6 +1,6 @@
 /* =====================================================
-   LOOTRUSH BOMBER - RESTORE VISIBLE BOARD
-   Keeps the original 5x5 Bomber appearance and START/CASH OUT flow.
+   LOOTRUSH BOMBER - 5x5 BOARD
+   Bomb selector: 3 through 24.
 ===================================================== */
 (function () {
   let board = [];
@@ -23,7 +23,6 @@
     if (safe) safe.textContent = safeCount;
     if (mult) mult.textContent = multiplier.toFixed(2) + "x";
     if (status) status.textContent = active ? "PLAYING" : "READY";
-
     if (start) {
       start.disabled = active;
       start.style.display = "block";
@@ -84,7 +83,6 @@
     active = true;
     safeCount = 0;
     multiplier = 1;
-
     createBoard();
     updateUI();
   }
@@ -115,9 +113,7 @@
     cell.classList.add("safe");
     updateUI();
 
-    if (safeCount >= 25 - bombs) {
-      cashOutBomber();
-    }
+    if (safeCount >= 25 - bombs) cashOutBomber();
   }
 
   function cashOutBomber() {
@@ -138,22 +134,15 @@
     updateUI();
     if (typeof saveGame === "function") saveGame();
     if (typeof updateAllUI === "function") updateAllUI();
-
-    setTimeout(() => {
-      const start = $("bomberStartButton");
-      const cash = $("bomberCashoutButton");
-      if (start) {
-        start.disabled = false;
-        start.style.display = "block";
-      }
-      if (cash) cash.disabled = true;
-    }, 0);
   }
 
   function changeBomberBombs() {
-    const selector = $("bomberBombSelector");
     if (active) return;
-    bombs = selector ? Number(selector.value) || 3 : 3;
+    const selector = $("bomberBombSelector");
+    let value = selector ? Number(selector.value) : 3;
+    if (!Number.isInteger(value) || value < 3 || value > 24) value = 3;
+    bombs = value;
+    if (selector) selector.value = String(bombs);
     resetBoard();
   }
 
@@ -161,15 +150,23 @@
   window.cashOutBomber = cashOutBomber;
   window.changeBomberBombs = changeBomberBombs;
   window.initBomber = resetBoard;
-  window.bomberGameActive = false;
 
   document.addEventListener("DOMContentLoaded", () => {
     const selector = $("bomberBombSelector");
-    if (selector) bombs = Number(selector.value) || 3;
+    if (selector) {
+      selector.innerHTML = "";
+      for (let i = 3; i <= 24; i++) {
+        const option = document.createElement("option");
+        option.value = String(i);
+        option.textContent = `${i} Bomb${i === 1 ? "" : "s"}`;
+        if (i === 3) option.selected = true;
+        selector.appendChild(option);
+      }
+      bombs = 3;
+    }
     resetBoard();
   });
 
-  // Keep the board ready whenever the Bomber page is opened.
   const originalShowPage = window.showPage;
   if (typeof originalShowPage === "function") {
     window.showPage = function (pageId) {
