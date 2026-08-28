@@ -1,83 +1,23 @@
-/* LootRush Bomber: 5x5 board, 3-24 bombs, difficulty scales with bomb count. */
+/* LootRush Bomber: diamond bet + 3-24 bombs + risk-based multiplier. */
 (function(){
-  let board=[],bombs=3,active=false,multiplier=1,safeCount=0;
-  const START_COST=1;
+  let board=[],bombs=3,active=false,multiplier=1,safeCount=0,currentBet=1;
   const $=id=>document.getElementById(id);
-
   function balance(){return typeof diamonds==='number'&&Number.isFinite(diamonds)?diamonds:0}
   function saveBalance(){if(typeof saveGame==='function')saveGame();else localStorage.setItem('diamonds',String(diamonds))}
-  function bombPercent(){return (bombs/25)*100}
-
-  // Risk scales directly with the selected bomb count.
-  // 3 bombs = 12% of the board; 24 bombs = 96% of the board.
-  function getMultiplier(n){
-    if(n<=0)return 1;
-    const safeCells=25-bombs;
-    if(safeCells<=0)return 1;
-    const survivalFactor=25/(25-bombs);
-    return Math.pow(survivalFactor,n*0.35);
-  }
-
-  function removeOldOffer(){
-    const old=$('bomberOffer');if(old){old.classList.remove('show');old.style.display='none'}
-    const oldModal=$('lrPurchaseOffer');if(oldModal){oldModal.classList.remove('show');oldModal.style.display='none'}
-  }
-
-  function ensureModal(){
-    let modal=$('bomberInsufficientModal');if(modal)return modal;
-    modal=document.createElement('div');modal.id='bomberInsufficientModal';
-    modal.innerHTML=`<div class="bomber-offer-backdrop"></div><div class="bomber-offer-modal" role="dialog" aria-modal="true"><div class="bomber-insufficient">⚠️ Բավարար Diamonds չկա<div class="bomber-balance-line">Պետք է՝ <b class="required">1</b> 💎 &nbsp; | &nbsp; Balance՝ <b class="current">0</b> 💎</div></div><div class="bomber-offer-content"><div class="bomber-ad-box">Advertisement</div><div class="bomber-diamond-box"><div class="bomber-diamond-icon">💎</div><b>Need more Diamonds?</b><span>Get Diamonds instantly</span><button type="button" class="bomber-buy-diamonds">GET DIAMONDS</button></div></div><button type="button" class="bomber-skip">Skip</button></div>`;
-    document.body.appendChild(modal);
-    modal.querySelector('.bomber-buy-diamonds').addEventListener('click',()=>{closeModal();if(typeof showPage==='function')showPage('shop')});
-    modal.querySelector('.bomber-skip').addEventListener('click',closeModal);
-    modal.querySelector('.bomber-offer-backdrop').addEventListener('click',closeModal);
-    return modal;
-  }
-  function showModal(){removeOldOffer();const modal=ensureModal();modal.querySelector('.required').textContent=START_COST;modal.querySelector('.current').textContent=Math.floor(balance());modal.classList.add('show')}
-  function closeModal(){const modal=$('bomberInsufficientModal');if(modal)modal.classList.remove('show')}
-
-  function updateUI(){
-    if($('bombCount'))$('bombCount').textContent=bombs;
-    if($('safeCount'))$('safeCount').textContent=safeCount;
-    if($('bomberMultiplier'))$('bomberMultiplier').textContent=multiplier.toFixed(2)+'x';
-    if($('bomberDiamondBalance'))$('bomberDiamondBalance').textContent=Math.floor(balance());
-    if($('bomberStartButton')){$('bomberStartButton').disabled=false;$('bomberStartButton').textContent='▶ START'}
-    if($('bomberCashoutButton'))$('bomberCashoutButton').disabled=!active||safeCount===0;
-  }
-
-  function createBoard(){
-    const c=$('bomberBoard');if(!c)return;c.innerHTML='';board=[];
-    const positions=new Set();while(positions.size<bombs)positions.add(Math.floor(Math.random()*25));
-    for(let i=0;i<25;i++){
-      const cell=document.createElement('button');cell.type='button';cell.className='bomber-cell';cell.textContent='?';cell.dataset.bomb=positions.has(i)?'1':'0';
-      cell.setAttribute('aria-label','Bomber cell '+(i+1));cell.addEventListener('click',()=>openCell(cell));c.appendChild(cell);board.push(cell);
-    }
-  }
-
-  function resetBoard(){active=false;safeCount=0;multiplier=1;closeModal();createBoard();updateUI();if($('bomberStatus'))$('bomberStatus').textContent=`READY • ${Math.round(bombPercent())}% BOMB RATE`}
-
-  function startBomberGame(){
-    if(active)return;closeModal();
-    if(balance()<START_COST){if($('bomberStatus'))$('bomberStatus').textContent='⚠️ NOT ENOUGH DIAMONDS';showModal();updateUI();return}
-    diamonds-=START_COST;saveBalance();safeCount=0;multiplier=1;active=true;createBoard();updateUI();
-    if($('bomberStatus'))$('bomberStatus').textContent=`READY • ${Math.round(bombPercent())}% BOMB RATE`;
-  }
-
-  function openCell(cell){
-    if(!active||cell.disabled)return;cell.disabled=true;
-    if(cell.dataset.bomb==='1'){
-      cell.textContent='💣';cell.classList.add('bomb');active=false;
-      board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});
-      if($('bomberStatus'))$('bomberStatus').textContent=`💥 BOMB • ${Math.round(bombPercent())}% RATE`;updateUI();return;
-    }
-    safeCount++;multiplier=getMultiplier(safeCount);cell.textContent='💎';cell.classList.add('safe');updateUI();
-    if(safeCount>=25-bombs)cashOutBomber();
-  }
-
-  function cashOutBomber(){if(!active||safeCount<1)return;active=false;if($('bomberStatus'))$('bomberStatus').textContent='CASH OUT '+multiplier.toFixed(2)+'x';board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});updateUI()}
-  function changeBomberBombs(){if(active)return;let v=Number($('bomberBombSelector')?.value||3);if(!Number.isInteger(v)||v<3||v>24)v=3;bombs=v;if($('bomberBombSelector'))$('bomberBombSelector').value=String(v);resetBoard()}
-
-  window.startBomberGame=startBomberGame;window.cashOutBomber=cashOutBomber;window.changeBomberBombs=changeBomberBombs;window.updateBomberBetUI=function(){};window.initBomber=resetBoard;
-  window.skipGameOffer=function(game){if(game==='bomber')closeModal()};
-  document.addEventListener('DOMContentLoaded',()=>{const s=$('bomberBombSelector');if(s){s.innerHTML='';for(let i=3;i<=24;i++){const o=document.createElement('option');o.value=String(i);o.textContent=i+' Bombs';s.appendChild(o)}s.value='3'}removeOldOffer();ensureModal();closeModal();resetBoard()});
+  function getBet(){const input=$('bomberBet');let v=Number(input?.value);if(!Number.isFinite(v)||v<1)v=1;v=Math.floor(v);if(input)input.value=v;return v}
+  function bombPercent(){return bombs/25*100}
+  function getMultiplier(n){if(n<=0)return 1;const safe=25-bombs;if(safe<=0)return 1;return Math.pow(25/safe,n*.35)}
+  function removeOldOffer(){const old=$('bomberOffer');if(old){old.classList.remove('show');old.style.display='none'}const oldModal=$('lrPurchaseOffer');if(oldModal){oldModal.classList.remove('show');oldModal.style.display='none'}}
+  function ensureModal(){let m=$('bomberInsufficientModal');if(m)return m;m=document.createElement('div');m.id='bomberInsufficientModal';m.innerHTML=`<div class="bomber-offer-backdrop"></div><div class="bomber-offer-modal"><div class="bomber-insufficient">⚠️ Բավարար Diamonds չկա<div class="bomber-balance-line">Պետք է՝ <b class="required">1</b> 💎 &nbsp;|&nbsp; Balance՝ <b class="current">0</b> 💎</div></div><div class="bomber-offer-content"><div class="bomber-ad-box">Advertisement</div><div class="bomber-diamond-box"><div class="bomber-diamond-icon">💎</div><b>Need more Diamonds?</b><span>Get Diamonds instantly</span><button type="button" class="bomber-buy-diamonds">GET DIAMONDS</button></div></div><button type="button" class="bomber-skip">Skip</button></div>`;document.body.appendChild(m);m.querySelector('.bomber-buy-diamonds').addEventListener('click',()=>{closeModal();if(typeof showPage==='function')showPage('shop')});m.querySelector('.bomber-skip').addEventListener('click',closeModal);m.querySelector('.bomber-offer-backdrop').addEventListener('click',closeModal);return m}
+  function showModal(){removeOldOffer();const m=ensureModal();const b=getBet();m.querySelector('.required').textContent=b;m.querySelector('.current').textContent=Math.floor(balance());m.classList.add('show')}
+  function closeModal(){const m=$('bomberInsufficientModal');if(m)m.classList.remove('show')}
+  function updateUI(){if($('bombCount'))$('bombCount').textContent=bombs;if($('safeCount'))$('safeCount').textContent=safeCount;if($('bomberMultiplier'))$('bomberMultiplier').textContent=multiplier.toFixed(2)+'x';if($('bomberDiamondBalance'))$('bomberDiamondBalance').textContent=Math.floor(balance());if($('bomberStartButton')){$('bomberStartButton').disabled=false;$('bomberStartButton').textContent='▶ START'}if($('bomberCashoutButton'))$('bomberCashoutButton').disabled=!active||safeCount===0}
+  function createBoard(){const c=$('bomberBoard');if(!c)return;c.innerHTML='';board=[];const pos=new Set();while(pos.size<bombs)pos.add(Math.floor(Math.random()*25));for(let i=0;i<25;i++){const cell=document.createElement('button');cell.type='button';cell.className='bomber-cell';cell.textContent='?';cell.dataset.bomb=pos.has(i)?'1':'0';cell.addEventListener('click',()=>openCell(cell));c.appendChild(cell);board.push(cell)}}
+  function resetBoard(){active=false;safeCount=0;multiplier=1;currentBet=getBet();closeModal();createBoard();updateUI();if($('bomberStatus'))$('bomberStatus').textContent=`READY • ${Math.round(bombPercent())}% BOMB RATE`}
+  function startBomberGame(){if(active)return;closeModal();currentBet=getBet();if(balance()<currentBet){if($('bomberStatus'))$('bomberStatus').textContent='⚠️ NOT ENOUGH DIAMONDS';showModal();updateUI();return}diamonds-=currentBet;saveBalance();safeCount=0;multiplier=1;active=true;createBoard();updateUI();if($('bomberStatus'))$('bomberStatus').textContent=`PLAYING • BET ${currentBet} 💎 • ${Math.round(bombPercent())}% BOMB RATE`}
+  function openCell(cell){if(!active||cell.disabled)return;cell.disabled=true;if(cell.dataset.bomb==='1'){cell.textContent='💣';cell.classList.add('bomb');active=false;board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});if($('bomberStatus'))$('bomberStatus').textContent=`💥 BOMB • LOST ${currentBet} 💎`;updateUI();return}safeCount++;multiplier=getMultiplier(safeCount);cell.textContent='💎';cell.classList.add('safe');updateUI();if(safeCount>=25-bombs)cashOutBomber()}
+  function cashOutBomber(){if(!active||safeCount<1)return;active=false;const win=Math.floor(currentBet*multiplier*100)/100;diamonds+=win;saveBalance();if($('bomberStatus'))$('bomberStatus').textContent=`💰 +${win.toFixed(2)} 💎 • CASH OUT ${multiplier.toFixed(2)}x`;board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});updateUI()}
+  function changeBomberBombs(){if(active)return;let v=Number($('bomberBombSelector')?.value||3);if(!Number.isInteger(v)||v<3||v>24)v=3;bombs=v;resetBoard()}
+  window.startBomberGame=startBomberGame;window.cashOutBomber=cashOutBomber;window.changeBomberBombs=changeBomberBombs;window.updateBomberBetUI=function(){getBet();};window.initBomber=resetBoard;window.skipGameOffer=game=>{if(game==='bomber')closeModal()};
+  document.addEventListener('DOMContentLoaded',()=>{const s=$('bomberBombSelector');if(s){s.innerHTML='';for(let i=3;i<=24;i++){const o=document.createElement('option');o.value=i;o.textContent=i+' Bombs';s.appendChild(o)}s.value='3'}const b=$('bomberBet');if(b)b.addEventListener('input',()=>{if(!active)getBet()});removeOldOffer();ensureModal();closeModal();resetBoard()});
 })();
