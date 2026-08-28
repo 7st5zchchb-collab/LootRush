@@ -71,7 +71,45 @@ function updateStats(){const r=document.getElementById("rolls"),s=document.getEl
 function updateProfile(){const n=document.getElementById("playerNameTop"),a=document.getElementById("playerAvatar");if(n)n.textContent=playerName;if(a)a.src=playerAvatar}
 function updateSkin(){document.body.classList.remove("skin-shadow","skin-fire","skin-ice");if(currentSkin&&currentSkin!=="Default")document.body.classList.add("skin-"+currentSkin.toLowerCase())}
 function saveGame(){localStorage.setItem("coins",coins);localStorage.setItem("diamonds",diamonds);localStorage.setItem("points",points);localStorage.setItem("totalRolls",totalRolls);localStorage.setItem("streak",streak);localStorage.setItem("bestStreak",bestStreak);localStorage.setItem("rareItems",rareItems);localStorage.setItem("inventory",JSON.stringify(inventory));localStorage.setItem("playerName",playerName);localStorage.setItem("playerAvatar",playerAvatar);localStorage.setItem("currentSkin",currentSkin);localStorage.setItem("crashWins",crashWins);localStorage.setItem("crashLosses",crashLosses);localStorage.setItem("crashTotalGames",crashTotalGames);localStorage.setItem("crashBestMultiplier",crashBestMultiplier);localStorage.setItem("crashTotalWon",crashTotalWon)}
-function showPage(pageId){document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));const page=document.getElementById(pageId);if(!page)return;page.classList.remove("hidden");window.scrollTo({top:0,left:0,behavior:"auto"});if(pageId==="inventory")renderInventory();if(pageId==="wallet")updateWallet();if(pageId==="bomber"&&typeof initBomber==="function")initBomber();if(pageId==="crash"&&typeof initCrashGame==="function")initCrashGame();if(pageId==="shop")setTimeout(ensureDiamondShopVisible,0)}
+
+function showPage(pageId){
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  const page=document.getElementById(pageId);
+  if(!page)return;
+  page.classList.remove("hidden");
+  const header=document.querySelector("header");
+  if(header)header.classList.remove("header-hidden");
+  window.scrollTo(0,0);
+  if(pageId==="inventory")renderInventory();
+  if(pageId==="wallet")updateWallet();
+  if(pageId==="bomber"&&typeof initBomber==="function")initBomber();
+  if(pageId==="crash"&&typeof initCrashGame==="function")initCrashGame();
+  if(pageId==="shop")setTimeout(ensureDiamondShopVisible,0);
+}
+
+let lastScrollY=0;
+let scrollTicking=false;
+function updateHeaderOnScroll(){
+  const header=document.querySelector("header");
+  if(!header)return;
+  const currentY=window.scrollY||window.pageYOffset||0;
+  if(currentY<=60){
+    header.classList.remove("header-hidden");
+  }else if(currentY>lastScrollY+4){
+    header.classList.add("header-hidden");
+  }else if(currentY<lastScrollY-4){
+    header.classList.remove("header-hidden");
+  }
+  lastScrollY=currentY;
+  scrollTicking=false;
+}
+window.addEventListener("scroll",()=>{
+  if(!scrollTicking){
+    window.requestAnimationFrame(updateHeaderOnScroll);
+    scrollTicking=true;
+  }
+},{passive:true});
+
 let messageTimer;function showMessage(text){const m=document.getElementById("message");if(!m){console.log(text);return}m.textContent=text;m.classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>m.classList.remove("show"),2500)}
 function getRandomLoot(){const random=Math.random()*100;let current=0;for(const item of loot){current+=item.chance;if(random<=current)return item}return loot[0]}
 function rollLoot(){const cost=100;if(coins<cost){showMessage("❌ Not enough coins!");return}coins-=cost;totalRolls++;const item=getRandomLoot();if(["RARE","EPIC","LEGENDARY","MYTHIC"].includes(item.rarity)){rareItems++;streak++;if(streak>bestStreak)bestStreak=streak}else streak=0;if(item.type==="coins")coins+=item.reward;if(item.type==="diamonds")diamonds+=item.reward;addInventoryItem(item);const r=document.getElementById("rarity"),i=document.getElementById("lootIcon"),n=document.getElementById("lootName"),d=document.getElementById("lootDescription"),w=document.getElementById("reward");if(r)r.textContent=item.rarity;if(i)i.textContent=item.icon;if(n)n.textContent=item.name;if(d)d.textContent=item.description;if(w)w.textContent=item.type==="coins"?`+${item.reward} 💵`:`+${item.reward} 💎`;updateAllUI();renderInventory();saveGame();showMessage(`🎉 You won ${item.name}!`)}
