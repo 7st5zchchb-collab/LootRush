@@ -1,11 +1,11 @@
-/* LootRush Bomber: diamond bet + numeric 3-24 bomb input + risk-based multiplier. */
+/* LootRush Bomber: numeric diamond bet + 3-24 bomb selector + risk-based multiplier. */
 (function(){
   let board=[],bombs=3,active=false,multiplier=1,safeCount=0,currentBet=1;
   const $=id=>document.getElementById(id);
   function balance(){return typeof diamonds==='number'&&Number.isFinite(diamonds)?diamonds:0}
   function saveBalance(){if(typeof saveGame==='function')saveGame();else localStorage.setItem('diamonds',String(diamonds))}
   function getBet(){const i=$('bomberBet');let v=Number(i?.value);if(!Number.isFinite(v)||v<1)v=1;v=Math.floor(v);if(i)i.value=v;return v}
-  function getBombs(){const i=$('bomberBombs');let v=Number(i?.value);if(!Number.isFinite(v))v=3;v=Math.min(24,Math.max(3,Math.floor(v)));if(i)i.value=v;return v}
+  function getBombs(){const i=$('bomberBombSelector');let v=Number(i?.value);if(!Number.isFinite(v))v=3;v=Math.min(24,Math.max(3,Math.floor(v)));if(i)i.value=String(v);return v}
   function bombPercent(){return bombs/25*100}
   function getMultiplier(n){if(n<=0)return 1;const safe=25-bombs;return safe>0?Math.pow(25/safe,n*.35):1}
   function removeOldOffer(){const a=$('bomberOffer'),b=$('lrPurchaseOffer');if(a){a.classList.remove('show');a.style.display='none'}if(b){b.classList.remove('show');b.style.display='none'}}
@@ -18,7 +18,7 @@
   function startBomberGame(){if(active)return;closeModal();currentBet=getBet();bombs=getBombs();if(balance()<currentBet){if($('bomberStatus'))$('bomberStatus').textContent='⚠️ NOT ENOUGH DIAMONDS';showModal();updateUI();return}diamonds-=currentBet;saveBalance();safeCount=0;multiplier=1;active=true;createBoard();updateUI();if($('bomberStatus'))$('bomberStatus').textContent=`PLAYING • BET ${currentBet} 💎 • ${Math.round(bombPercent())}% BOMB RATE`}
   function openCell(cell){if(!active||cell.disabled)return;cell.disabled=true;if(cell.dataset.bomb==='1'){cell.textContent='💣';cell.classList.add('bomb');active=false;board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});if($('bomberStatus'))$('bomberStatus').textContent=`💥 BOMB • LOST ${currentBet} 💎`;updateUI();return}safeCount++;multiplier=getMultiplier(safeCount);cell.textContent='💎';cell.classList.add('safe');updateUI();if(safeCount>=25-bombs)cashOutBomber()}
   function cashOutBomber(){if(!active||safeCount<1)return;active=false;const win=Math.floor(currentBet*multiplier*100)/100;diamonds+=win;saveBalance();if($('bomberStatus'))$('bomberStatus').textContent=`💰 +${win.toFixed(2)} 💎 • CASH OUT ${multiplier.toFixed(2)}x`;board.forEach(c=>{c.disabled=true;if(c.dataset.bomb==='1')c.textContent='💣'});updateUI()}
-  function syncBombInput(){bombs=getBombs();if(!active)resetBoard()}
-  window.startBomberGame=startBomberGame;window.cashOutBomber=cashOutBomber;window.changeBomberBombs=syncBombInput;window.updateBomberBetUI=getBet;window.initBomber=resetBoard;window.skipGameOffer=game=>{if(game==='bomber')closeModal()};
-  document.addEventListener('DOMContentLoaded',()=>{const b=$('bomberBet'),bi=$('bomberBombs');if(b)b.addEventListener('input',()=>{if(!active)getBet()});if(bi){bi.addEventListener('input',()=>{if(!active)syncBombInput()});bi.addEventListener('change',()=>{if(!active)syncBombInput()})}removeOldOffer();ensureModal();closeModal();resetBoard()});
+  function syncBombSelector(){bombs=getBombs();if(!active)resetBoard()}
+  window.startBomberGame=startBomberGame;window.cashOutBomber=cashOutBomber;window.changeBomberBombs=syncBombSelector;window.updateBomberBetUI=getBet;window.initBomber=resetBoard;window.skipGameOffer=game=>{if(game==='bomber')closeModal()};
+  document.addEventListener('DOMContentLoaded',()=>{const b=$('bomberBet'),s=$('bomberBombSelector');if(b)b.addEventListener('input',()=>{if(!active)getBet()});if(s){s.addEventListener('change',()=>{if(!active)syncBombSelector()})}removeOldOffer();ensureModal();closeModal();resetBoard()});
 })();
