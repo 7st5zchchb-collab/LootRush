@@ -22,9 +22,12 @@
   }
 
   function getDiamondBalance() {
-    return typeof diamonds === "number" && Number.isFinite(diamonds)
-      ? diamonds
-      : 0;
+    return typeof diamonds === "number" && Number.isFinite(diamonds) ? diamonds : 0;
+  }
+
+  function showBomberOffer() {
+    const offer = $("bomberOffer");
+    if (offer) offer.classList.add("show");
   }
 
   function updateUI() {
@@ -46,23 +49,18 @@
       start.disabled = active || getDiamondBalance() < currentBet;
       start.textContent = `💎 START — ${currentBet} 💎`;
     }
-    if (cash) {
-      cash.disabled = !active || safeCount === 0;
-    }
+    if (cash) cash.disabled = !active || safeCount === 0;
     if (status && !active && safeCount === 0) status.textContent = "READY";
   }
 
   function createBoard() {
     const container = $("bomberBoard");
     if (!container) return;
-
     container.innerHTML = "";
     board = [];
 
     const bombPositions = new Set();
-    while (bombPositions.size < bombs) {
-      bombPositions.add(Math.floor(Math.random() * 25));
-    }
+    while (bombPositions.size < bombs) bombPositions.add(Math.floor(Math.random() * 25));
 
     for (let i = 0; i < 25; i++) {
       const cell = document.createElement("button");
@@ -98,12 +96,12 @@
 
   function startBomberGame() {
     if (active) return;
-
     updateBomberBetUI();
 
     const balance = getDiamondBalance();
     if (currentBet > balance) {
       if (typeof showMessage === "function") showMessage("❌ Not enough diamonds!");
+      showBomberOffer();
       return;
     }
 
@@ -118,6 +116,7 @@
 
     createBoard();
     updateUI();
+    showBomberOffer();
   }
 
   function openCell(index, cell) {
@@ -128,15 +127,12 @@
       cell.textContent = "💣";
       cell.classList.add("bomb");
       active = false;
-
       board.forEach(c => {
         c.disabled = true;
         if (c.dataset.bomb === "1") c.textContent = "💣";
       });
-
       const status = $("bomberStatus");
       if (status) status.textContent = "💥 BOMB! BET LOST";
-
       roundStake = 0;
       updateUI();
       if (typeof saveGame === "function") saveGame();
@@ -155,7 +151,6 @@
 
   function cashOutBomber() {
     if (!active || safeCount < 1 || roundStake < 1) return;
-
     const reward = roundStake * multiplier;
     diamonds += reward;
     active = false;
@@ -167,7 +162,6 @@
 
     const status = $("bomberStatus");
     if (status) status.textContent = `CASHED OUT +${reward.toFixed(2)} 💎`;
-
     roundStake = 0;
     updateUI();
     if (typeof saveGame === "function") saveGame();
@@ -203,6 +197,8 @@
       }
       bombs = 3;
     }
+    const offer = $("bomberOffer");
+    if (offer) offer.classList.remove("show");
     resetBoard();
   });
 })();
