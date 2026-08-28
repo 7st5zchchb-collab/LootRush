@@ -5,7 +5,7 @@
   let active = false;
   let multiplier = 1;
   let safeCount = 0;
-
+  const START_COST = 1;
   const MULTIPLIERS = [1.14, 1.28, 1.56];
   const $ = id => document.getElementById(id);
 
@@ -17,6 +17,11 @@
 
   function getDiamondBalance() {
     return typeof diamonds === "number" && Number.isFinite(diamonds) ? diamonds : 0;
+  }
+
+  function persistBalance() {
+    if (typeof saveGame === "function") saveGame();
+    else localStorage.setItem("diamonds", diamonds);
   }
 
   function hideBomberOffer() {
@@ -40,6 +45,12 @@
     msg.innerHTML = `⚠️ Բավարար Diamonds չկա<br><small>Պետք է՝ ${required} 💎 &nbsp;|&nbsp; Balance՝ ${balance} 💎</small>`;
     msg.classList.add("show");
     offer.classList.add("show");
+  }
+
+  function placeOfferAfterStart() {
+    const start = $("bomberStartButton");
+    const offer = $("bomberOffer");
+    if (start && offer && start.parentElement) start.parentElement.insertBefore(offer, start.nextSibling);
   }
 
   function updateUI() {
@@ -77,19 +88,24 @@
     safeCount = 0;
     multiplier = 1;
     createBoard();
+    hideBomberOffer();
     updateUI();
   }
 
   function startBomberGame() {
     if (active) return;
-    /* One diamond is required to start. If balance is insufficient, show the offer card only now. */
-    const required = 1;
-    if (getDiamondBalance() < required) {
-      showBomberOffer(required);
+    hideBomberOffer();
+
+    if (getDiamondBalance() < START_COST) {
+      showBomberOffer(START_COST);
       if ($("bomberStatus")) $("bomberStatus").textContent = "⚠️ NOT ENOUGH DIAMONDS";
+      updateUI();
       return;
     }
-    hideBomberOffer();
+
+    // Charge exactly 1 Diamond only when START actually starts a game.
+    diamonds -= START_COST;
+    persistBalance();
     safeCount = 0;
     multiplier = 1;
     active = true;
@@ -160,6 +176,7 @@
       }
       selector.value = "3";
     }
+    placeOfferAfterStart();
     hideBomberOffer();
     resetBoard();
   });
