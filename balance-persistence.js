@@ -4,6 +4,7 @@
   let lastSaved="";
   let saveTimer=0;
   let saving=false;
+  let restored=false;
 
   function token(){return localStorage.getItem("lootRushToken")||""}
   function values(){return {coins:Math.max(0,Math.floor(Number(localStorage.getItem("coins"))||0)),diamonds:Math.max(0,Math.floor(Number(localStorage.getItem("diamonds"))||0)),points:Math.max(0,Math.floor(Number(localStorage.getItem("points"))||0))}}
@@ -26,8 +27,10 @@
   window.updateWallet=updateWallet;
 
   async function save(force=false){
-    const t=token(); if(!t||saving)return;
-    const v=values(); if(!force&&key(v)===lastSaved)return;
+    const t=token();
+    if(!t||saving||!restored)return;
+    const v=values();
+    if(!force&&key(v)===lastSaved)return;
     saving=true;
     try{
       const r=await fetch(`${API}/sync-progress`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${t}`},body:JSON.stringify(v),keepalive:true,cache:"no-store"});
@@ -45,12 +48,15 @@
   }
 
   async function restore(){
-    const t=token(); if(!t)return;
+    const t=token();
+    if(!t)return false;
     try{
       const r=await fetch(`${API}/me`,{headers:{Authorization:`Bearer ${t}`},cache:"no-store"});
-      if(!r.ok)return;
+      if(!r.ok)return false;
       const d=await r.json().catch(()=>({}));
-      if(!d.success||!d.user)return;
+      if(!d.success||!d.user)return false;
+
+      // Server is authoritative. Restore BEFORE any periodic save can run.
       localStorage.setItem("coins",String(d.user.coins));
       localStorage.setItem("diamonds",String(d.user.diamonds));
       localStorage.setItem("points",String(d.user.points));
@@ -59,15 +65,29 @@
       if(typeof coins!=="undefined")coins=Number(d.user.coins)||0;
       if(typeof diamonds!=="undefined")diamonds=Number(d.user.diamonds)||0;
       if(typeof points!=="undefined")points=Number(d.user.points)||0;
+      restored=true;
       if(typeof updateAllUI==="function")updateAllUI();
-    }catch(e){console.warn("Balance restore failed",e)}
+      return true;
+    }catch(e){console.warn("Balance restore failed",e);return false}
   }
 
-  function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(false),1500)}
+  function scheduleSave(){
+    if(!restored)return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>save(false),1500);
+  }
+
   window.lootRushSaveBalance=save;
   window.lootRushRestoreBalance=restore;
   window.lootRushScheduleBalanceSave=scheduleSave;
-  window.addEventListener("DOMContentLoaded",()=>{setTimeout(()=>restore(),900);setInterval(()=>save(false),5000);setTimeout(updateWallet,0)});
+
+  window.addEventListener("DOMContentLoaded",async()=>{
+    // Restore first. Do not send the browser's starter/default balance to the server.
+    await restore();
+    setInterval(()=>save(false),5000);
+    setTimeout(updateWallet,0);
+  });
+
   window.addEventListener("beforeunload",()=>save(true));
   document.addEventListener("visibilitychange",()=>document.visibilityState==="hidden"?save(true):restore());
 })();
