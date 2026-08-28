@@ -1,0 +1,15 @@
+/* LootRush inline ad / diamond offer - keeps existing design system */
+.lr-purchase-offer{display:none;width:min(100%,760px);margin:22px auto 0;padding:16px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:linear-gradient(145deg,rgba(27,27,36,.96),rgba(10,10,15,.96));box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 28px rgba(255,23,79,.08);backdrop-filter:blur(18px)}
+.lr-purchase-offer.show{display:block;animation:lrOfferIn .25s ease}
+.lr-offer-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+.lr-ad-box{min-height:110px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.025);color:#777783;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.lr-buy-box{min-width:220px;padding:16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(0,180,255,.12);text-align:center}
+.lr-buy-box .lr-diamond{font-size:30px;display:block;margin-bottom:4px}
+.lr-buy-title{font-weight:900;font-size:14px;color:#fff}
+.lr-buy-price{margin:6px 0 10px;color:#9ea0ad;font-size:13px}
+.lr-buy-btn{width:100%;border:0;border-radius:10px;padding:11px 14px;color:#fff;font-weight:900;background:linear-gradient(135deg,#ff174f,#c5003b);box-shadow:0 8px 22px rgba(255,23,79,.2)}
+.lr-buy-btn:hover{transform:translateY(-1px)}
+.lr-skip{display:block;margin:12px auto 0;border:0;background:transparent;color:#777783;font-weight:700;font-size:13px;padding:6px 14px}
+.lr-skip:hover{color:#fff}
+@keyframes lrOfferIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.lr-purchase-offer{margin-top:16px;padding:12px;border-radius:15px}.lr-offer-row{grid-template-columns:1fr;gap:10px}.lr-ad-box{min-height:72px}.lr-buy-box{min-width:0;padding:13px}.lr-buy-btn{padding:12px}.lr-skip{margin-top:8px;padding:8px 18px}}
