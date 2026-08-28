@@ -3,13 +3,22 @@
 ===================================================== */
 const STRIPE_SERVER_URL = "https://lootrush.7st5zchchb.workers.dev";
 
-let coins = Number(localStorage.getItem("coins")) || 200;
-let diamonds = Number(localStorage.getItem("diamonds")) || 0;
-let points = Number(localStorage.getItem("points")) || 0;
-let totalRolls = Number(localStorage.getItem("totalRolls")) || 0;
-let streak = Number(localStorage.getItem("streak")) || 0;
-let bestStreak = Number(localStorage.getItem("bestStreak")) || 0;
-let rareItems = Number(localStorage.getItem("rareItems")) || 0;
+// IMPORTANT: 0 is a valid balance. Do not use `|| default` here,
+// otherwise a saved 0 would incorrectly become the starting balance again.
+function getSavedNumber(key, defaultValue = 0) {
+  const raw = localStorage.getItem(key);
+  if (raw === null || raw === "") return defaultValue;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : defaultValue;
+}
+
+let coins = getSavedNumber("coins", 150);
+let diamonds = getSavedNumber("diamonds", 0);
+let points = getSavedNumber("points", 0);
+let totalRolls = getSavedNumber("totalRolls", 0);
+let streak = getSavedNumber("streak", 0);
+let bestStreak = getSavedNumber("bestStreak", 0);
+let rareItems = getSavedNumber("rareItems", 0);
 let playerName = localStorage.getItem("playerName") || "Guest";
 let playerAvatar = localStorage.getItem("playerAvatar") || "default-avatar.png";
 let currentSkin = localStorage.getItem("currentSkin") || "Default";
@@ -112,13 +121,13 @@ window.addEventListener("scroll",()=>{
 
 let messageTimer;function showMessage(text){const m=document.getElementById("message");if(!m){console.log(text);return}m.textContent=text;m.classList.add("show");clearTimeout(messageTimer);messageTimer=setTimeout(()=>m.classList.remove("show"),2500)}
 function getRandomLoot(){const random=Math.random()*100;let current=0;for(const item of loot){current+=item.chance;if(random<=current)return item}return loot[0]}
-function rollLoot(){const cost=100;if(coins<cost){showMessage("❌ Not enough coins!");return}coins-=cost;totalRolls++;const item=getRandomLoot();if(["RARE","EPIC","LEGENDARY","MYTHIC"].includes(item.rarity)){rareItems++;streak++;if(streak>bestStreak)bestStreak=streak}else streak=0;if(item.type==="coins")coins+=item.reward;if(item.type==="diamonds")diamonds+=item.reward;addInventoryItem(item);const r=document.getElementById("rarity"),i=document.getElementById("lootIcon"),n=document.getElementById("lootName"),d=document.getElementById("lootDescription"),w=document.getElementById("reward");if(r)r.textContent=item.rarity;if(i)i.textContent=item.icon;if(n)n.textContent=item.name;if(d)d.textContent=item.description;if(w)w.textContent=item.type==="coins"?`+${item.reward} 💵`:`+${item.reward} 💎`;updateAllUI();renderInventory();saveGame();showMessage(`🎉 You won ${item.name}!`)}
+function rollLoot(){const cost=100;if(coins<cost){showMessage("❌ Not enough coins!");return}coins-=cost;totalRolls++;const item=getRandomLoot();if(["RARE","EPIC","LEGENDARY","MYTHIC"].includes(item.rarity)){rareItems++;streak++;if(streak>bestStreak)bestStreak=streak}else streak=0;if(item.type==="coins")coins+=item.reward;if(item.type==="diamonds")diamonds+=item.reward;addInventoryItem(item);const r=document.getElementById("rarity"),i=document.getElementById("lootIcon"),n=document.getElementById("lootName"),d=document.getElementById("lootDescription"),w=document.getElementById("reward");if(r)r.textContent=item.rarity;if(i)i.textContent=item.icon;if(n)n.textContent=item.name;if(d)d.textContent=item.description;if(w)w.textContent=item.type==="coins"?`+${item.reward} 💵`:`+${item.reward} 💎`;updateAllUI();renderInventory();saveGame();if(typeof window.lootRushScheduleBalanceSave==="function")window.lootRushScheduleBalanceSave();showMessage(`🎉 You won ${item.name}!`)}
 function addInventoryItem(item){const existing=inventory.find(x=>x.name===item.name);if(existing)existing.amount=Number(existing.amount||0)+1;else inventory.push({name:item.name,icon:item.icon,rarity:item.rarity,amount:1})}
 function renderInventory(){const c=document.getElementById("inventoryItems");if(!c)return;c.innerHTML="";if(!inventory.length){c.innerHTML=`<div class="empty-item"><div class="empty-icon">🎒</div><h2>Inventory is empty</h2><p>Play the game and collect rewards!</p></div>`;return}inventory.forEach(item=>{const card=document.createElement("div");card.className="item inventory-card";card.innerHTML=`<div class="item-icon">${item.icon}</div><h2>${item.name}</h2><p>${item.rarity}</p><strong>×${item.amount}</strong>`;c.appendChild(card)})}
 function initShop(){renderShop("coinShopItems",coinShop);renderShop("diamondShopItems",diamondShop);ensureDiamondShopVisible()}
 function renderShop(containerId,items){const c=document.getElementById(containerId);if(!c)return;c.innerHTML="";items.forEach(item=>{const card=document.createElement("div");card.className="item";let priceHTML="";if(item.type==="coins")priceHTML=`<strong>${item.price} 💵</strong>`;if(item.type==="dollarDiamonds"){const perDiamond=item.price/item.diamonds,discount=item.oldPrice>item.price?Math.round((1-item.price/item.oldPrice)*100):0;priceHTML=`<div class="diamond-price"><span class="old-price">$${item.oldPrice.toFixed(2)}</span><span class="new-price">$${item.price.toFixed(2)}</span></div><p>Get ${item.diamonds} 💎</p><div class="diamond-unit-price">1 💎 = $${perDiamond.toFixed(2)}</div>${discount?`<div class="diamond-discount">-${discount}% OFF</div>`:""}`}card.innerHTML=`<div class="item-icon">${item.icon}</div><h2>${item.name}</h2>${priceHTML}<button class="buy-button">Buy</button>`;card.querySelector(".buy-button").addEventListener("click",()=>buySkin(item));c.appendChild(card)})}
 function ensureDiamondShopVisible(){const shop=document.getElementById("shop"),section=document.getElementById("diamondShopItems");if(!shop||!section)return;section.classList.remove("hidden");section.removeAttribute("hidden");section.style.display="grid";section.style.visibility="visible";section.style.opacity="1";section.style.height="auto";section.style.maxHeight="none";section.style.overflow="visible";const title=[...shop.querySelectorAll(".shop-section-title")].find(x=>x.textContent.includes("Diamond"));const subtitle=[...shop.querySelectorAll(".shop-section-subtitle")].find(x=>x.textContent.includes("Diamonds"));if(title){title.style.display="block";title.style.visibility="visible"}if(subtitle){subtitle.style.display="block";subtitle.style.visibility="visible"}if(!section.children.length)renderShop("diamondShopItems",diamondShop)}
-async function buySkin(item){if(item.type==="coins"){if(coins<item.price){showMessage("❌ Not enough coins!");return}coins-=item.price;addInventoryItem({name:item.name,icon:item.icon,rarity:"SHOP"});if(item.skin)currentSkin=item.skin;updateAllUI();renderInventory();saveGame();showMessage(`✅ ${item.name} purchased!`);return}if(item.type==="dollarDiamonds"){await buyWithStripe(item);return}showMessage("❌ Unknown product.")}
+async function buySkin(item){if(item.type==="coins"){if(coins<item.price){showMessage("❌ Not enough coins!");return}coins-=item.price;addInventoryItem({name:item.name,icon:item.icon,rarity:"SHOP"});if(item.skin)currentSkin=item.skin;updateAllUI();renderInventory();saveGame();if(typeof window.lootRushScheduleBalanceSave==="function")window.lootRushScheduleBalanceSave();showMessage(`✅ ${item.name} purchased!`);return}if(item.type==="dollarDiamonds"){await buyWithStripe(item);return}showMessage("❌ Unknown product.")}
 async function buyWithStripe(item){try{showMessage("⏳ Opening Stripe Checkout...");if(!item.productId){showMessage("❌ Product ID is missing.");return}const response=await fetch(`${STRIPE_SERVER_URL}/create-checkout-session`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({productId:item.productId})});const data=await response.json();if(data.url)window.location.href=data.url;else showMessage(`❌ ${data.error||"Payment session could not be created."}`)}catch(error){console.error(error);showMessage("❌ Payment server is unavailable.")}}
 
 document.addEventListener("DOMContentLoaded",()=>{updateAllUI();if(typeof initShop==="function")initShop();renderInventory();if(typeof initBomber==="function")initBomber();if(typeof initCrashGame==="function")initCrashGame();if(typeof checkAuth==="function")checkAuth();if(typeof startRewardTimer==="function")startRewardTimer();if(typeof checkStripePayment==="function")checkStripePayment();if(typeof renderCrashHistory==="function")renderCrashHistory();setTimeout(ensureDiamondShopVisible,50);setInterval(saveGame,3000)});
