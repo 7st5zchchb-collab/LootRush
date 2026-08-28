@@ -1,23 +1,115 @@
-/* Bomber responsive layout */
-.bomber-balance-row{width:min(100%,520px);margin:12px auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;border-radius:12px;}
-.bomber-controls{width:min(100%,520px);margin:12px auto;display:grid;grid-template-columns:1fr;gap:12px;align-items:end;}
-.bomber-controls>div{min-width:0;}
-.bomber-controls label{display:block;margin-bottom:6px;}
-.bomber-controls input,.bomber-controls select{width:100%;height:44px;box-sizing:border-box;}
-#bomberBet{-moz-appearance:textfield;appearance:textfield;}
-#bomberBet::-webkit-outer-spin-button,#bomberBet::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-.bomber-info{width:min(100%,520px);margin:12px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.bomber-info>span{min-width:0;text-align:center;white-space:nowrap;}
-.bomber-board{width:min(100%,520px);margin:18px auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;aspect-ratio:1/1;}
-.bomber-board button,.bomber-board .bomber-cell{min-width:0;min-height:0;aspect-ratio:1/1;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-#bomberStartButton,#bomberCashoutButton{width:min(100%,520px);margin:8px auto;display:block;min-height:46px;box-sizing:border-box;position:static;left:auto;right:auto;transform:none;}
-@media(max-width:768px){
-  .bomber-balance-row,.bomber-controls,.bomber-info,.bomber-board{width:100%;}
-  .bomber-controls{gap:8px;}
-  .bomber-controls input,.bomber-controls select{height:42px;font-size:16px;}
-  .bomber-info{gap:5px;font-size:13px;}
-  .bomber-board{gap:5px;margin:14px auto;}
-  .bomber-board button,.bomber-board .bomber-cell{font-size:clamp(15px,6vw,27px);}
-  #bomberStartButton,#bomberCashoutButton{width:100%;}
+/* =====================================================
+   LOOTRUSH BOMBER — CLEAN BOMBS / DIAMONDS CONTROLS
+   ===================================================== */
+.bomber-balance-row,
+.bomber-controls,
+.bomber-info,
+.bomber-board,
+#bomberStartButton,
+#bomberCashoutButton{width:min(100%,560px);max-width:560px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+
+.bomber-balance-row{
+  margin-top:14px;
+  margin-bottom:12px;
+  padding:13px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-radius:14px;
 }
-@media(max-width:420px){.bomber-info{grid-template-columns:1fr 1fr 1fr;font-size:12px;}}
+
+.bomber-controls{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:10px;
+  margin-top:12px;
+  margin-bottom:12px;
+}
+
+.bomber-controls>div{min-width:0;width:100%}
+.bomber-controls label{display:block;margin:0 0 7px;font-weight:800}
+.bomber-controls select,
+.bomber-controls input{
+  display:block;
+  width:100%;
+  height:46px;
+  min-width:0;
+  padding:0 13px;
+  box-sizing:border-box;
+  border-radius:12px;
+}
+
+/* Bomb selector: always stays inside its own field */
+#bomberBombSelector{
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.bomber-info{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+  margin-bottom:14px;
+}
+.bomber-info>span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:center;
+}
+
+/* 5×5 Bomber board — never stretches outside the card */
+.bomber-board{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  aspect-ratio:1/1;
+  margin-top:16px;
+  margin-bottom:16px;
+  overflow:hidden;
+}
+.bomber-board button,
+.bomber-board .bomber-cell{
+  width:100%;
+  min-width:0;
+  min-height:0;
+  aspect-ratio:1/1;
+  padding:0;
+  box-sizing:border-box;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+#bomberStartButton,
+#bomberCashoutButton{
+  position:static;
+  display:block;
+  min-height:46px;
+  margin-top:8px;
+  margin-bottom:8px;
+  transform:none;
+}
+
+@media(max-width:768px){
+  .bomber-balance-row,
+  .bomber-controls,
+  .bomber-info,
+  .bomber-board,
+  #bomberStartButton,
+  #bomberCashoutButton{width:100%;max-width:100%}
+  .bomber-balance-row{padding:11px 12px}
+  .bomber-controls{gap:8px}
+  .bomber-controls select,.bomber-controls input{height:44px;font-size:16px}
+  .bomber-info{gap:5px;font-size:12px}
+  .bomber-board{gap:5px;margin-top:12px;margin-bottom:12px}
+  .bomber-board button,.bomber-board .bomber-cell{font-size:clamp(14px,6vw,26px)}
+}
+
+@media(max-width:380px){
+  .bomber-info{font-size:11px;gap:3px}
+  .bomber-board{gap:4px}
+}
