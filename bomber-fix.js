@@ -1,6 +1,7 @@
 /* =====================================================
    LOOTRUSH BOMBER - 5x5 BOARD
    Bomb selector: 3 through 24.
+   Multiplier progression: 1.14x, 1.28x, 1.56x, then continues upward.
 ===================================================== */
 (function () {
   let board = [];
@@ -9,7 +10,14 @@
   let multiplier = 1;
   let safeCount = 0;
 
+  const MULTIPLIERS = [1.14, 1.28, 1.56];
   const $ = id => document.getElementById(id);
+
+  function getMultiplier(count) {
+    if (count <= 0) return 1;
+    if (count <= MULTIPLIERS.length) return MULTIPLIERS[count - 1];
+    return MULTIPLIERS[MULTIPLIERS.length - 1] * Math.pow(2, count - MULTIPLIERS.length);
+  }
 
   function updateUI() {
     const bombCount = $("bombCount");
@@ -108,7 +116,7 @@
     }
 
     safeCount++;
-    multiplier = 1 + safeCount * 0.15;
+    multiplier = getMultiplier(safeCount);
     cell.textContent = "💎";
     cell.classList.add("safe");
     updateUI();
@@ -158,7 +166,7 @@
       for (let i = 3; i <= 24; i++) {
         const option = document.createElement("option");
         option.value = String(i);
-        option.textContent = `${i} Bomb${i === 1 ? "" : "s"}`;
+        option.textContent = `${i} Bombs`;
         if (i === 3) option.selected = true;
         selector.appendChild(option);
       }
