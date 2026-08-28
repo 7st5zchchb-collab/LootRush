@@ -1,0 +1,16 @@
+/* Hide the sticky top dashboard while scrolling down. Show it again when scrolling up. */
+header {
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+header.header-hidden {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header {
+    transition: none;
+  }
+}
