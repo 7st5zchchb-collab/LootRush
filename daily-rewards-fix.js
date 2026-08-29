@@ -1,7 +1,8 @@
 /* =====================================================
    LOOTRUSH - DAILY REWARDS FIX
-   OPEN REWARDS shows the daily reward list and claims
-   exactly the reward displayed for the current day.
+   Daily rewards are added to the LIVE balance variables and
+   then persisted/synced, so the claimed amount really appears
+   in the user's balance immediately and survives refresh/login.
 ===================================================== */
 (function(){
   const KEY = 'lootRushDailyRewardState';
@@ -26,15 +27,37 @@
   }
 
   function claimReward(reward, state){
+    // IMPORTANT: change the same global balance variables used by game.js.
+    // Previously this file changed only localStorage, while game.js still
+    // held the old value in `coins` / `diamonds`, causing the reward to
+    // appear missing or get overwritten by the persistence sync.
     if(reward.type === 'coins'){
-      const coins = Number(localStorage.getItem('coins')) || 0;
-      localStorage.setItem('coins', String(coins + reward.amount));
-      window.updateAllUI?.();
+      if(typeof coins !== 'undefined'){
+        coins = Math.max(0, Number(coins) || 0) + reward.amount;
+      } else {
+        const current = Number(localStorage.getItem('coins')) || 0;
+        localStorage.setItem('coins', String(current + reward.amount));
+      }
     } else {
-      const diamonds = Number(localStorage.getItem('diamonds')) || 0;
-      localStorage.setItem('diamonds', String(diamonds + reward.amount));
-      window.updateAllUI?.();
+      if(typeof diamonds !== 'undefined'){
+        diamonds = Math.max(0, Number(diamonds) || 0) + reward.amount;
+      } else {
+        const current = Number(localStorage.getItem('diamonds')) || 0;
+        localStorage.setItem('diamonds', String(current + reward.amount));
+      }
     }
+
+    // Save the updated live balance. This also schedules the server sync
+    // through balance-persistence.js when the account is logged in.
+    if(typeof saveGame === 'function') saveGame();
+    else {
+      if(typeof coins !== 'undefined') localStorage.setItem('coins', String(Math.floor(Number(coins) || 0)));
+      if(typeof diamonds !== 'undefined') localStorage.setItem('diamonds', String(Math.floor(Number(diamonds) || 0)));
+      if(typeof window.lootRushSaveBalance === 'function') window.lootRushSaveBalance(true);
+    }
+
+    if(typeof window.updateAllUI === 'function') window.updateAllUI();
+
     state.claimedDate = today();
     state.claimedDay = reward.day;
     save(state);
@@ -82,9 +105,11 @@
     button.onclick = () => {
       const fresh = load();
       if(fresh.claimedDate === today()) return;
+
       claimReward(reward, fresh);
       button.disabled = true;
       button.textContent = `✅ DAY ${currentDay} CLAIMED`;
+
       const msg = document.getElementById('message');
       if(msg){
         msg.textContent = `🎁 Daily Reward: +${reward.amount} ${reward.type === 'coins' ? '💵' : '💎'}`;
